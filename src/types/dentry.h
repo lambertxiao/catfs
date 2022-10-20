@@ -1,17 +1,22 @@
+#ifndef CATFS_DENTRY_H
+#define CATFS_DENTRY_H
 #include <string>
 #include <ctime>
 #include <mutex>
 #include <map> 
 
+namespace catfs{
 namespace types {
   class Dentry {
     public:
-      mutex lock;
-      string name;
+      std::mutex lock;
+      std::string name;
       Dentry* parent;
       Inode *inode;
       time_t ttl;
       bool synced;
-      map<string, Dentry*> children;
+      std::map<std::string, Dentry*> children;
   };
-};
+} // namespace types
+} // namespace catfs
+#endif
