@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 project(catfs)
 
 set(CODE_ROOT "${PROJECT_SOURCE_DIR}/src")
+set(INCLUDE_ROOT "${PROJECT_SOURCE_DIR}/include")
 
-include_directories(${CODE_ROOT})
+include_directories(${CODE_ROOT} ${INCLUDE_ROOT})
 
 aux_source_directory("$CODE_ROOT/fs" FS)
 aux_source_directory("$CODE_ROOT/meta" META)

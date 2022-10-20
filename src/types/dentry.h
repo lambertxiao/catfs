@@ -3,20 +3,23 @@
 #include <string>
 #include <ctime>
 #include <mutex>
-#include <map> 
+#include <map>
 
-namespace catfs{
-namespace types {
-  class Dentry {
+namespace catfs
+{
+  namespace types
+  {
+    class Dentry
+    {
     public:
       std::mutex lock;
       std::string name;
-      Dentry* parent;
+      Dentry *parent;
       Inode *inode;
       time_t ttl;
       bool synced;
-      std::map<std::string, Dentry*> children;
-  };
-} // namespace types
-} // namespace catfs
+      std::map<std::string, Dentry *> children;
+    };
+  }
+}
 #endif
