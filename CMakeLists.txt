@@ -12,7 +12,7 @@ aux_source_directory("$CODE_ROOT/types" TYPES)
 set(SRC_DIR ${FS} ${META} ${STORAGE} ${TYPES})
 
 set(WARNING_FLAGS "-Wall")
-set(CMAKE_CXX_FLAGS "${WARNING_FLAGS} -std=c++11 -mavx2 -Wall -fPIC -DRTE_MACHINE_CPUFLAG_AVX2 -fstack-protector-all ")
+set(CMAKE_CXX_FLAGS "${WARNING_FLAGS} -std=c++17 -mavx2 -Wall -fPIC -DRTE_MACHINE_CPUFLAG_AVX2 -fstack-protector-all ")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -ggdb -O0 ")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -ggdb -O3")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
