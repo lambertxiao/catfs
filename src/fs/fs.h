@@ -1,5 +1,4 @@
-#define FUSE_USE_VERSION 34
-#include "libfuse/fuse.h"
+#include "fs/fuse.h"
 
 namespace catfs
 {

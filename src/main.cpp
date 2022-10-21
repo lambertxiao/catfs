@@ -1,9 +1,7 @@
 #include <iostream>
 #include "meta/meta.h"
 #include "fs/fs.h"
-
-#define FUSE_USE_VERSION 34
-#include "libfuse/fuse.h"
+#include "fs/fuse.h"
 
 using namespace catfs::fs;
 
