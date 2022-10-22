@@ -1,13 +1,15 @@
-#include "fs/fuse.h"
+#include <string>
+#include "fuse.h"
 
-namespace catfs
-{
-  namespace fs
-  {
-    class CatFs
-    {
-    public:
-      int (*getattr)(const char *, struct stat *, struct fuse_file_info *fi);
+namespace catfs {
+  namespace fs {
+    struct CatFsOpt {};
+
+    class CFS {
+      public:
+        static CFS* getInstance();
+        
+        int statfs(const std::string path, struct statvfs* stbuf);
     };
   }
 }
