@@ -5,11 +5,20 @@ namespace catfs {
   namespace fs {
     struct CatFsOpt {};
 
-    class CFS {
+    class CatFS {
+      private:
+        CatFS () = default;
+        ~CatFS () = default;
+        CatFS (const CatFS &)= delete;
+        CatFS & operator=(const CatFS &)= delete;
+
       public:
-        static CFS* getInstance();
-        
         int statfs(const std::string path, struct statvfs* stbuf);
+        
+        static CatFS& getInstance() {
+          static CatFS instance;
+          return instance;
+        }
     };
   }
 }
