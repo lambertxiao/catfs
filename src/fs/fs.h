@@ -1,5 +1,5 @@
 #include <string>
-#include "fuse.h"
+#include "fs/fuse.h"
 
 namespace catfs {
   namespace fs {

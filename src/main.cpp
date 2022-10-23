@@ -1,8 +1,8 @@
 #include <iostream>
 #include "meta/meta.h"
+#include "fs/fuse.h"
 #include "fs/fs.h"
 #include "fs/fsa.h"
-#include "fs/fuse.h"
 
 using namespace catfs::fs;
 
