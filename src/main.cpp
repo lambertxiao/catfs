@@ -6,12 +6,55 @@
 using namespace catfs::fs;
 
 static const struct fuse_lowlevel_ops catfs_oper = {
+	.init = FuseAdapter::init,
+	.destroy = FuseAdapter::destroy,
+	.lookup = FuseAdapter::lookup,
+	.forget = FuseAdapter::forget,
+	.getattr = FuseAdapter::getattr,
+	.setattr = FuseAdapter::setattr,
+	.readlink = FuseAdapter::readlink,
+	.mknod = FuseAdapter::mknod,
+	.mkdir = FuseAdapter::mkdir,
+	.unlink = FuseAdapter::unlink,
+	.rmdir = FuseAdapter::rmdir,
+	.symlink = FuseAdapter::symlink,
+	.rename = FuseAdapter::rename,
+	.link = FuseAdapter::link,
+	.open = FuseAdapter::open,
+	.read = FuseAdapter::read,
+	.write = FuseAdapter::write,
+	.flush = FuseAdapter::flush,
+	.release = FuseAdapter::release,
+	.fsync = FuseAdapter::fsync,
+	.opendir = FuseAdapter::opendir,
+	.readdir = FuseAdapter::readdir,
+	.releasedir = FuseAdapter::releasedir,
+	.fsyncdir = FuseAdapter::fsyncdir,
 	.statfs	= FuseAdapter::statfs,
+	.setxattr = FuseAdapter::setxattr,
+	.getxattr = FuseAdapter::getxattr,
+	.listxattr = FuseAdapter::listxattr,
+	.removexattr = FuseAdapter::removexattr,
+	.access = FuseAdapter::access,
+	.create = FuseAdapter::create,
+	.getlk = FuseAdapter::getlk,
+	.setlk = FuseAdapter::setlk,
+	.bmap = FuseAdapter::bmap,
+	.poll = FuseAdapter::poll,
+	.write_buf = FuseAdapter::write_buf,
+	.retrieve_reply = FuseAdapter::retrieve_reply,
+	.forget_multi = FuseAdapter::forget_multi,
+	.flock = FuseAdapter::flock,
+	.fallocate = FuseAdapter::fallocate,
+	.readdirplus = FuseAdapter::readdirplus,
+	.copy_file_range = FuseAdapter::copy_file_range,
+	.lseek = FuseAdapter::lseek,
 };
 
 int main(int argc, char **argv)
 {
   std::cout << "start catfs" << std::endl;
+
   struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	struct fuse_session *se;
 	struct fuse_cmdline_opts opts;
