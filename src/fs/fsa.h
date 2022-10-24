@@ -1,4 +1,5 @@
 #include "fs/fuse.h"
+#include <glog/logging.h>
 
 namespace catfs {
   namespace fs {
@@ -25,7 +26,7 @@ namespace catfs {
         }
 
         static void init(void *userdata, struct fuse_conn_info *conn) {
-          std::cout << "fuseop-init" << std::endl;
+          std::cout << "fuseop-initxxxx" << std::endl;
         }
         static void destroy(void *userdata) {
           std::cout << "fuseop-destroy" << std::endl;
@@ -153,4 +154,3 @@ namespace catfs {
     };
   };
 };
-	

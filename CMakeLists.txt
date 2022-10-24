@@ -2,9 +2,11 @@ project(catfs)
 
 set(CODE_ROOT "${PROJECT_SOURCE_DIR}/src")
 set(LIBS_ROOT "${PROJECT_SOURCE_DIR}/libs")
+set(VCPKG_ROOT "~/workspace/vcpkg/installed/x64-linux")
 
 include_directories(${CODE_ROOT})
 include_directories(${LIBS_ROOT}/fuse3)
+include_directories(${VCPKG_ROOT}/include)
 
 aux_source_directory("$CODE_ROOT/fs" FS)
 aux_source_directory("$CODE_ROOT/meta" META)
@@ -19,8 +21,11 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -ggdb -O3")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
-# link_directories(/usr/local/lib)
+link_directories(${VCPKG_ROOT}/lib)
+
+# find_package (glog 0.6.0 REQUIRED)
+
 add_executable(catfs ${CODE_ROOT}/main.cpp ${SRC_DIR})
 
 # 链接静态库
-target_link_libraries(catfs libfuse3.a dl)
+target_link_libraries(catfs libfuse3.a dl libglog.a libgflags.a)

@@ -21,3 +21,15 @@ ninja
 # 将libfuse3.a移动到系统lib路径
 mv lib/libfuse3.a /usr/local/lib
 ```
+
+### 安装包管理器vcpkg
+
+通过vcpkg需要安装glog
+
+```
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+./vcpkg install glog
+```

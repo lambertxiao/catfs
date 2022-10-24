@@ -2,6 +2,7 @@
 #include "fs/fuse.h"
 #include "fs/fs.h"
 #include "fs/fsa.h"
+#include <glog/logging.h>
 
 using namespace catfs::fs;
 
@@ -53,7 +54,9 @@ static const struct fuse_lowlevel_ops catfs_oper = {
 
 int main(int argc, char **argv)
 {
-  std::cout << "start catfs" << std::endl;
+	google::InitGoogleLogging(argv[0]);
+  // std::cout << "start catfs" << std::endl;
+	LOG(INFO) << "start catfs sdsdsdsd";;
 
   struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	struct fuse_session *se;
