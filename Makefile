@@ -2,10 +2,10 @@
 build:
 	./do_cmake.sh && cd build && make
 
-.PHONY: mount
-mount:
-	./bin/catfs -f /tmp/catfs
+.PHONY: run
+run:
+	./bin/catfs -b xsx -m /tmp/catfs -f 
 
 .PHONY: umount
 umount:
-	sudo umount -f /tmp/catfs
+	umount -f /tmp/catfs

@@ -11,6 +11,8 @@ namespace catfs
     using InodeID = uint64_t;
     using FileMode = uint32_t;
 
+    static const InodeID ROOT_INODE_ID = 1;
+    
     class Inode
     {
     public:
@@ -22,7 +24,6 @@ namespace catfs
       uint32_t uid;
       uint32_t gid;
     };
-
-  } // namespace types
-} // namespace catfs
+  } 
+} 
 #endif

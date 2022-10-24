@@ -76,7 +76,9 @@
         "numbers": "cpp",
         "semaphore": "cpp",
         "stop_token": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "fstream": "cpp",
+        "cinttypes": "cpp"
     },
     "[cpp]": {
         "editor.insertSpaces": true,

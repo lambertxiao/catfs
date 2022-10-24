@@ -22,10 +22,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 link_directories(${VCPKG_ROOT}/lib)
-
-# find_package (glog 0.6.0 REQUIRED)
-
 add_executable(catfs ${CODE_ROOT}/main.cpp ${SRC_DIR})
 
 # 链接静态库
-target_link_libraries(catfs libfuse3.a dl libglog.a libgflags.a)
+target_link_libraries(catfs libfuse3.a dl libglog.a libgflags.a libfmt.a)

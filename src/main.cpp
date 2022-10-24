@@ -2,7 +2,7 @@
 #include "fs/fuse.h"
 #include "fs/fs.h"
 #include "fs/fsa.h"
-#include <glog/logging.h>
+#include "flags/cmdline.h"
 
 using namespace catfs::fs;
 
@@ -54,58 +54,46 @@ static const struct fuse_lowlevel_ops catfs_oper = {
 
 int main(int argc, char **argv)
 {
-	google::InitGoogleLogging(argv[0]);
-  // std::cout << "start catfs" << std::endl;
-	LOG(INFO) << "start catfs sdsdsdsd";;
+	cmdline::parser parm;
+	parm.add<std::string>("bucket", 'b', "bucket name", true, "");
+	parm.add<std::string>("mountpoint", 'm', "mount point", true, "");
+	parm.add("foreground", 'f', "running in foreground");
+	parm.add("singlethread", '\0', "singlethread");
+	parm.add<u_int>("max_idle_threads", '\0', "max_idle_threads", false, 4);
 
-  struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+	parm.parse_check(argc, argv);
+
+	const char* mp = parm.get<std::string>("mountpoint").data();
+
+	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	struct fuse_session *se;
-	struct fuse_cmdline_opts opts;
-	struct fuse_loop_config config;
 	int ret = -1;
 
-	if (fuse_parse_cmdline(&args, &opts) != 0)
-		return 1;
+  args.argc = 1;
+  args.argv = (char**)&mp;
 
-  if (opts.show_help) {
-		printf("usage: %s [options] <mountpoint>\n\n", argv[0]);
-		fuse_cmdline_help();
-		fuse_lowlevel_help();
-		ret = 0;
-		goto err_out1;
-	} else if (opts.show_version) {
-		printf("FUSE library version %s\n", fuse_pkgversion());
-		fuse_lowlevel_version();
-		ret = 0;
-		goto err_out1;
-	}
-
-  if(opts.mountpoint == NULL) {
-		printf("usage: %s [options] <mountpoint>\n", argv[0]);
-		printf("       %s --help\n", argv[0]);
-		ret = 1;
-		goto err_out1;
-	}
+  // if (fuse_parse_cmdline(&args, &opts) != 0)
+	// 	return 1;
 
   se = fuse_session_new(&args, &catfs_oper, sizeof(catfs_oper), NULL);
 
-  	if (se == NULL)
-	    goto err_out1;
+	if (se == NULL)
+		goto err_out1;
 
 	if (fuse_set_signal_handlers(se) != 0)
-	    goto err_out2;
+	  goto err_out2;
 
-	if (fuse_session_mount(se, opts.mountpoint) != 0)
-	    goto err_out3;
+	if (fuse_session_mount(se, mp) != 0)
+	  goto err_out3;
 
-	fuse_daemonize(opts.foreground);
+	fuse_daemonize(parm.exist("foreground"));
 
-	/* Block until ctrl+c or fusermount -u */
-	if (opts.singlethread)
+  /* Block until ctrl+c or fusermount -u */
+	if (parm.exist("singlethread"))
 		ret = fuse_session_loop(se);
 	else {
-		config.clone_fd = opts.clone_fd;
-		config.max_idle_threads = opts.max_idle_threads;
+  	struct fuse_loop_config config;
+		config.max_idle_threads = parm.get<u_int>("max_idle_threads");
 		ret = fuse_session_loop_mt(se, &config);
 	}
 
@@ -115,7 +103,6 @@ err_out3:
 err_out2:
 	fuse_session_destroy(se);
 err_out1:
-	free(opts.mountpoint);
 	fuse_opt_free_args(&args);
 
 	return ret ? 1 : 0;

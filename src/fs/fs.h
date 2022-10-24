@@ -1,5 +1,6 @@
 #include <string>
 #include "fs/fuse.h"
+#include "types/inode.h"
 
 namespace catfs {
   namespace fs {
@@ -13,7 +14,7 @@ namespace catfs {
         CatFS & operator=(const CatFS &)= delete;
 
       public:
-        int statfs(const std::string path, struct statvfs* stbuf);
+        catfs::types::InodeID lookupInode(catfs::types::InodeID ino);
         
         static CatFS& getInstance() {
           static CatFS instance;
