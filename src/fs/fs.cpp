@@ -2,7 +2,7 @@
 
 namespace catfs {
   namespace fs {
-    int CatFS::statfs(const std::string path, struct statvfs* stbuf) {
+    const Inode* lookupInode(InodeID ino) {
       return 0;
     }
   }

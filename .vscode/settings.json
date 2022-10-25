@@ -78,7 +78,8 @@
         "stop_token": "cpp",
         "thread": "cpp",
         "fstream": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "codecvt": "cpp"
     },
     "[cpp]": {
         "editor.insertSpaces": true,

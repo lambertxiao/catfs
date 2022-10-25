@@ -2,24 +2,29 @@
 #include "fs/fuse.h"
 #include "fs/fs.h"
 #include "fs/fsa.h"
+#include "stor/stor.h"
+#include "stor/stor_s3.h"
 #include "cmdline/cmdline.h"
 #include "fmtlog/fmtlog.h"
 
 using namespace catfs::fs;
 
+void init_catfs(cmdline::parser parm);
+
 int main(int argc, char **argv)
 {
-	logi("a log message");
 	cmdline::parser parm;
 	parm.add<std::string>("bucket", 'b', "bucket name", true, "");
 	parm.add<std::string>("mountpoint", 'm', "mount point", true, "");
+	parm.add<std::string>("stor_backend", '\0', "specified storage backend", false, "s3");
 	parm.add("foreground", 'f', "running in foreground");
 	parm.add("singlethread", '\0', "singlethread");
 	parm.add<u_int>("max_idle_threads", '\0', "max_idle_threads", false, 4);
 	parm.parse_check(argc, argv);
 
-	const char* mp = parm.get<std::string>("mountpoint").data();
+	init_catfs(parm);
 
+	const char* mp = parm.get<std::string>("mountpoint").data();
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	int ret = -1;
 
@@ -58,3 +63,12 @@ err_out1:
 
 	return ret ? 1 : 0;
 }
+
+void init_catfs(cmdline::parser parm) {
+	std::string sto_backend = parm.get<std::string>("sto_backend");
+
+	catfs::stor::Stor* stor;
+	if (sto_backend == "s3") {
+		stor = new catfs::stor::S3Stor();
+	}
+};
