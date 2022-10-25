@@ -2,14 +2,9 @@ project(catfs)
 
 set(CODE_ROOT "${PROJECT_SOURCE_DIR}/src")
 set(LIBS_ROOT "${PROJECT_SOURCE_DIR}/libs")
-# set(VCPKG_ROOT "~/workspace/vcpkg/installed/x64-linux")
 
 include_directories(${LIBS_ROOT})
 include_directories(${CODE_ROOT})
-# include_directories(${LIBS_ROOT}/fmt)
-# include_directories(${LIBS_ROOT}/fuse3)
-# include_directories(${LIBS_ROOT}/fmtlog)
-# include_directories(${LIBS_ROOT}/cmdline)
 
 aux_source_directory("$CODE_ROOT/fs" FS)
 aux_source_directory("$CODE_ROOT/meta" META)
