@@ -15,7 +15,7 @@ namespace catfs {
 
       public:
         catfs::types::InodeID lookupInode(catfs::types::InodeID ino);
-        
+
         static CatFS& getInstance() {
           static CatFS instance;
           return instance;

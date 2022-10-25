@@ -31,5 +31,31 @@ git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
 ./bootstrap-vcpkg.sh
 ./vcpkg integrate install
-./vcpkg install glog
+```
+
+安装fmt
+
+```
+./vcpkg install fmt
+```
+
+安装fmtlog
+
+```
+git clone git@github.com:MengRao/fmtlog.git
+cd fmtlog
+git submodule update --init
+./build.sh
+```
+
+
+确保 `/usr/local/lib/catfs` 里有如下文件：
+
+```
+.
+├── libfmt.a
+├── libfmtlog-static.a
+├── libfuse3.a
+├── libgflags.a
+└── libglog.a
 ```
