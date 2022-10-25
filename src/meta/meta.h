@@ -1,3 +1,6 @@
+#ifndef CATFS_META_H
+#define CATFS_META_H
+
 #include "types/inode.h"
 #include "types/dentry.h"
 #include "types/dirent.h"
@@ -28,3 +31,4 @@ namespace catfs {
     class LocalMeta {};
   }
 }
+#endif

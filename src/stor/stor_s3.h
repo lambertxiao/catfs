@@ -7,7 +7,6 @@ namespace catfs {
   namespace stor {
     class S3Stor : public Stor {
     public:
-      S3Stor() {};
       HeadFileResp* HeadFile(HeadFileReq* req) override;
     };
   }

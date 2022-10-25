@@ -5,7 +5,7 @@
 namespace catfs {
   namespace meta {
     types::Inode* get_inode(types::InodeID ino) {
-
+      return NULL;
     };
   }
 }
