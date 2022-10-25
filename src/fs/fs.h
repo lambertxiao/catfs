@@ -1,3 +1,6 @@
+#ifndef CATFS_FS_FS_H
+#define CATFS_FS_FS_H
+
 #include <string>
 #include "fs/fuse.h"
 #include "meta/meta.h"
@@ -11,26 +14,15 @@ namespace catfs {
     struct CatFsOpt {};
 
     class CatFS {
-    private:
-      // CatFS (meta::Meta* meta) = default;
-      // ~CatFS () = default;
-      // CatFS (const CatFS &)= delete;
-      // CatFS & operator=(const CatFS &)= delete;
+    public:
+      CatFS (meta::Meta* meta);
+      ~CatFS () = default;
 
       meta::Meta* meta;
 
     public:
-      static CatFS* instance;
       const Inode* lookupInode(InodeID ino);
-
-      static CatFS* getInstance(CatFsOpt opt) {
-        // if (instance == NULL) {
-        //   meta::Meta* meta = new meta::MetaImpl();
-
-        //   instance = new CatFS(meta);
-        // }
-        return instance;
-      }
     };
   }
 }
+#endif

@@ -9,7 +9,7 @@ namespace catfs {
   namespace meta {
     struct MetaOpt {};
 
-    class MetaImpl : Meta {
+    class MetaImpl : public Meta {
     private: 
       MetaOpt opt;
       std::shared_ptr<LocalMeta> lm;

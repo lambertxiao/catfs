@@ -1,5 +1,5 @@
-#ifndef CATFS_STOR_S3
-#define CATFS_STOR_S3
+#ifndef CATFS_STOR_S3_H
+#define CATFS_STOR_S3_H
 
 #include "stor/stor.h"
 

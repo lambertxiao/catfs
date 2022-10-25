@@ -1,16 +1,27 @@
+#ifndef CATFS_FS_FSA_H
+#define CATFS_FS_FSA_H
+
 #include "fs/fuse.h"
 #include <fmt/core.h>
 #include "types/inode.h"
+
+static const uint32_t BLOCK_SIZE = 4096;
+static const uint64_t TOTAL_SPACE = 1 << 30; // 1PB
+static const uint32_t TOTAL_BLOCKS = TOTAL_SPACE / BLOCK_SIZE;
+static const uint32_t INODES = 1 * 1000 * 1000 * 1000; // 1 billion
 
 namespace catfs {
   namespace fs {
 
     class FuseAdapter {
       public:
-        static const uint32_t BLOCK_SIZE = 4096;
-        static const uint64_t TOTAL_SPACE = 1 << 30; // 1PB
-	      static const uint32_t TOTAL_BLOCKS = TOTAL_SPACE / BLOCK_SIZE;
-      	static const uint32_t INODES = 1 * 1000 * 1000 * 1000; // 1 billion
+        static CatFS* instance;
+        static void setInstance(CatFS* cfs) {
+          FuseAdapter::instance = cfs;
+        }
+        static CatFS* getInstance(CatFsOpt opt) {
+          return instance;
+        }
 
         static void statfs(fuse_req_t req, fuse_ino_t ino) {
           fmt::print("statfs inode:{}\n", ino);
@@ -236,3 +247,4 @@ namespace catfs {
     };
   };
 };
+#endif

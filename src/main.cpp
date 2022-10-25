@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include "fs/fuse.h"
 #include "fs/fs.h"
 #include "fs/fsa.h"
@@ -6,17 +7,28 @@
 #include "stor/stor_s3.h"
 #include "cmdline/cmdline.h"
 #include "fmtlog/fmtlog.h"
+#include "meta/meta.h"
+#include "meta/meta_impl.h"
 
+using std::string;
 using namespace catfs::fs;
+
+using catfs::stor::Stor;
+using catfs::stor::S3Stor;
+
+using catfs::meta::Meta;
+using catfs::meta::MetaImpl;
+using catfs::meta::MetaOpt;
+using catfs::meta::LocalMeta;
 
 void init_catfs(cmdline::parser parm);
 
 int main(int argc, char **argv)
 {
 	cmdline::parser parm;
-	parm.add<std::string>("bucket", 'b', "bucket name", true, "");
-	parm.add<std::string>("mountpoint", 'm', "mount point", true, "");
-	parm.add<std::string>("stor_backend", '\0', "specified storage backend", false, "s3");
+	parm.add<string>("bucket", 'b', "bucket name", true, "");
+	parm.add<string>("mountpoint", 'm', "mount point", true, "");
+	parm.add<string>("stor_backend", '\0', "specified storage backend", false, "s3");
 	parm.add("foreground", 'f', "running in foreground");
 	parm.add("singlethread", '\0', "singlethread");
 	parm.add<u_int>("max_idle_threads", '\0', "max_idle_threads", false, 4);
@@ -24,7 +36,7 @@ int main(int argc, char **argv)
 
 	init_catfs(parm);
 
-	const char* mp = parm.get<std::string>("mountpoint").data();
+	const char* mp = parm.get<string>("mountpoint").data();
 	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 	int ret = -1;
 
@@ -65,10 +77,21 @@ err_out1:
 }
 
 void init_catfs(cmdline::parser parm) {
-	std::string sto_backend = parm.get<std::string>("sto_backend");
+	string sto_backend = parm.get<string>("sto_backend");
 
-	catfs::stor::Stor* stor;
+	Stor* stor;
 	if (sto_backend == "s3") {
-		stor = new catfs::stor::S3Stor();
+		stor = new S3Stor();
+	} else {
+		throw fmt::format("not support storage backend: {}", sto_backend);
 	}
+
+	MetaOpt metaOpt;
+
+	LocalMeta* lmeta = new LocalMeta();
+	Meta* meta = new MetaImpl(
+		metaOpt, std::make_shared<LocalMeta>(lmeta), std::make_shared<Stor>(stor)
+	);
+	CatFS* cfs = new CatFS(meta);
+	FuseAdapter::setInstance(cfs);
 };
