@@ -1,22 +1,23 @@
-#ifndef CATFS_META_IMPL_H
-#define CATFS_META_IMPL_H
+#ifndef CATFS_META_IMPL_H_
+#define CATFS_META_IMPL_H_
 
 #include <memory>
+#include <ctime>
 #include "meta/meta.h"
+#include "meta/meta_local.h"
 #include "stor/stor.h"
 
 namespace catfs {
   namespace meta {
-    struct MetaOpt {};
-
+    
     class MetaImpl : public Meta {
-    private: 
+    private:
       MetaOpt opt;
       std::shared_ptr<LocalMeta> lm;
       std::shared_ptr<stor::Stor> stor;
 
     public:
-      MetaImpl(MetaOpt opt, std::shared_ptr<LocalMeta> lm, std::shared_ptr<stor::Stor> stor) {
+      MetaImpl(const MetaOpt& opt, std::shared_ptr<LocalMeta> lm, std::shared_ptr<stor::Stor> stor) {
         this->opt = opt;
         this->stor = stor;
         this->lm = lm;

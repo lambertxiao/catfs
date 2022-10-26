@@ -1,5 +1,5 @@
-#ifndef CATFS_DENTRY_H
-#define CATFS_DENTRY_H
+#ifndef CATFS_DENTRY_H_
+#define CATFS_DENTRY_H_
 #include <string>
 #include <ctime>
 #include <mutex>

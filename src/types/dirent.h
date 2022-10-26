@@ -1,5 +1,5 @@
-#ifndef CATFS_DIRENT_H
-#define CATFS_DIRENT_H
+#ifndef CATFS_DIRENT_H_
+#define CATFS_DIRENT_H_
 
 #include "inode.h"
 #include <string>

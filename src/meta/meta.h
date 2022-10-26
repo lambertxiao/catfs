@@ -1,5 +1,5 @@
-#ifndef CATFS_META_H
-#define CATFS_META_H
+#ifndef CATFS_META_H_
+#define CATFS_META_H_
 
 #include "types/inode.h"
 #include "types/dentry.h"
@@ -10,6 +10,14 @@
 
 namespace catfs {
   namespace meta {
+    struct MetaOpt {
+      uint32_t gid;
+      uint32_t uid;
+      uint32_t dcache_timeout;
+      std::string bucket;
+      std::string bucket_prefix;
+    };
+
     class Meta {
     public:
       // virtual types::Dirent *create_dentry(types::InodeID pino, std::string name, types::FileMode mode) = 0;
@@ -28,7 +36,7 @@ namespace catfs {
       // virtual void destory() = 0;
     };
 
-    class LocalMeta {};
+   
   }
 }
 #endif

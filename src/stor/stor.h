@@ -1,7 +1,9 @@
-#ifndef CATFS_STOR_H
-#define CATFS_STOR_H
+#ifndef CATFS_STOR_H_
+#define CATFS_STOR_H_
 
 #include <iostream>
+
+using std::string;
 
 namespace catfs {
   namespace stor {
@@ -9,10 +11,17 @@ namespace catfs {
     struct ObjInfo {};
 
     struct HeadFileReq {
-      std::string objKey;
+      string objKey;
     };
     struct HeadFileResp {
       ObjInfo obj;
+    };
+
+    struct StorOpt {
+      string bucket;
+      string public_key;
+      string private_key;
+      string endpoint;
     };
 
     class Stor {

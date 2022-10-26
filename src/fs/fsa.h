@@ -1,8 +1,8 @@
-#ifndef CATFS_FS_FSA_H
-#define CATFS_FS_FSA_H
+#ifndef CATFS_FS_FSA_H_
+#define CATFS_FS_FSA_H_
 
-#include "fs/fuse.h"
 #include <fmt/core.h>
+#include "fs/fuse.h"
 #include "types/inode.h"
 
 static const uint32_t BLOCK_SIZE = 4096;
@@ -13,14 +13,17 @@ static const uint32_t INODES = 1 * 1000 * 1000 * 1000; // 1 billion
 namespace catfs {
   namespace fs {
 
+    static CatFS* catfs;
+
     class FuseAdapter {
       public:
-        static CatFS* instance;
-        static void setInstance(CatFS* cfs) {
-          FuseAdapter::instance = cfs;
+        
+        static void init_catfs(CatFS* cfs) {
+          catfs = cfs;
         }
-        static CatFS* getInstance(CatFsOpt opt) {
-          return instance;
+
+        static CatFS* get_catfs() {
+          return catfs;
         }
 
         static void statfs(fuse_req_t req, fuse_ino_t ino) {
@@ -44,6 +47,7 @@ namespace catfs {
 
         static void destroy(void *userdata) {
           std::cout << "fsa-destroy" << std::endl;
+          free(catfs);
         }
 
         static void lookup(fuse_req_t req, fuse_ino_t parent, const char *name) {
