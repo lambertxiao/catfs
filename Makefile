@@ -3,8 +3,8 @@ build:
 	./do_cmake.sh && cd build && make
 
 .PHONY: run
-run:
-	./bin/catfs -b xsx -m /tmp/catfs -f 
+run: build
+	./bin/catfs -b xsx -m /tmp/catfs -f
 
 .PHONY: umount
 umount:

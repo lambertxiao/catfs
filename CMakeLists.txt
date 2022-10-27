@@ -23,4 +23,6 @@ link_directories(/usr/local/lib/catfs)
 add_executable(catfs ${CODE_ROOT}/main.cpp ${SRC_DIR})
 
 # 链接静态库
-target_link_libraries(catfs dl libfuse3.a libglog.a libgflags.a libfmt.a libfmtlog-static.a)
+target_link_libraries(
+    catfs dl libfuse3.a libglog.a libgflags.a libfmt.a libfmtlog-static.a libyaml-cpp.a
+)
