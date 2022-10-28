@@ -20,6 +20,8 @@ namespace catfs
 
       virtual HeadFileResp *head_file(HeadFileReq *req) override;
       virtual ListObjectsResp *list_objects(ListObjectsReq *req) override;
+      virtual PutFileResp *put_file(PutFileReq *req) override;
+      virtual DeleteFileResp *delete_file(DeleteFileReq *req) override;
     };
   }
 }

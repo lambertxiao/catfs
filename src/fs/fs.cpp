@@ -9,5 +9,13 @@ namespace catfs {
     const Dentry* CatFS::find_dentry(InodeID pino, std::string name) {
       return meta->find_dentry(pino, name, false);
     }
+
+    const Dentry* CatFS::create_dentry(InodeID pino, std::string name, mode_t mode) {
+      return meta->create_dentry(pino, name, mode);
+    }
+
+    void CatFS::remove_dentry(InodeID parent, std::string name) {
+      meta->remove_dentry(parent, name);
+    }
   }
 }

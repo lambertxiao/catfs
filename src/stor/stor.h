@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <vector>
+#include <fstream>
+#include <map>
 
 using std::string;
 
@@ -46,6 +48,28 @@ namespace catfs
       std::vector<ObjInfo> objs;       
     };
 
+    struct PutFileReq
+    {
+      string obj_key;
+      std::ifstream buf;
+      std::map<string, string> meta_data;
+    };
+
+    struct PutFileResp
+    {
+      string etag;
+    };
+
+    struct DeleteFileReq
+    {
+      string obj_key;
+    };
+
+    struct DeleteFileResp
+    {
+
+    };
+
     struct StorOpt
     {
       string bucket;
@@ -59,6 +83,8 @@ namespace catfs
     public:
       virtual HeadFileResp *head_file(HeadFileReq *req) = 0;
       virtual ListObjectsResp *list_objects(ListObjectsReq *req) = 0;
+      virtual PutFileResp *put_file(PutFileReq *req) = 0;
+      virtual DeleteFileResp *delete_file(DeleteFileReq *req) = 0;
     };
   }
 }

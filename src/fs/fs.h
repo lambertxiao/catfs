@@ -29,6 +29,8 @@ namespace catfs {
       
       const Inode* lookup_inode(InodeID ino);
       const Dentry* find_dentry(InodeID pino, std::string name);
+      const Dentry* create_dentry(InodeID parent, std::string name, mode_t mode);
+      void remove_dentry(InodeID parent, std::string name);
     };
   }
 }

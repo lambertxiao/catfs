@@ -30,6 +30,9 @@ namespace catfs
 
       Inode *get_inode(InodeID ino) override;
       Dentry *find_dentry(InodeID pino, std::string name, bool onlyLocal) override;
+      Dentry *create_dentry(InodeID pino, std::string name, mode_t mode) override;
+      void remove_dentry(InodeID pino, std::string name) override;
+
       stor::ObjInfo *get_remote_obj(Dentry& parent, std::string name);
       stor::ObjInfo *check_dentry_exist(std::string path);
       bool is_remote_dir_exist(std::string path);

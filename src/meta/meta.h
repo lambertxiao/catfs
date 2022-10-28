@@ -33,8 +33,9 @@ namespace catfs
     public:
       virtual Inode *get_inode(InodeID ino) = 0;
       virtual Dentry *find_dentry(InodeID pino, std::string name, bool onlyLocal) = 0;
+      virtual Dentry *create_dentry(InodeID pino, std::string name, mode_t mode) = 0;
+      virtual void remove_dentry(InodeID pino, std::string name) = 0;
 
-      // virtual types::Dirent *create_dentry(types::InodeID pino, std::string name, types::FileMode mode) = 0;
       // virtual types::Dirent *get_dentry(types::InodeID ino) = 0;
       // virtual types::ErrCode remove_dentry(types::InodeID pino, std::string name) = 0;
       // virtual std::string get_dentry_path(types::InodeID ino) = 0;

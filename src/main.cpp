@@ -59,6 +59,7 @@ int main(int argc, char **argv)
 	try
 	{
 		fmtlog::flushOn(fmtlog::INF);
+		fmtlog::startPollingThread(1);
 
 		logi("start catfs");
 		cmdline::parser parm;
