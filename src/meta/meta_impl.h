@@ -9,6 +9,7 @@
 
 namespace catfs {
   namespace meta {
+    USING_TYPES
     
     class MetaImpl : public Meta {
     private:
@@ -22,6 +23,9 @@ namespace catfs {
         this->stor = stor;
         this->lm = lm;
       }
+
+      Inode* get_inode(InodeID ino) override;
+      Dentry* find_dentry(InodeID pino, std::string name, bool onlyLocal) override;
     };
   }
 }

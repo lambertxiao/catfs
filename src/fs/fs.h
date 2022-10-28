@@ -11,6 +11,7 @@ namespace catfs {
   namespace fs {
     using catfs::types::InodeID;
     using catfs::types::Inode;
+    using catfs::types::Dentry;
     using catfs::meta::Meta;
 
     struct CatFsOpt {};
@@ -26,7 +27,8 @@ namespace catfs {
 
       ~CatFS() {}
       
-      const Inode* lookupInode(InodeID ino);
+      const Inode* lookup_inode(InodeID ino);
+      const Dentry* find_dentry(InodeID pino, std::string name);
     };
   }
 }

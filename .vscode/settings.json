@@ -81,7 +81,8 @@
         "cinttypes": "cpp",
         "codecvt": "cpp",
         "list": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "shared_mutex": "cpp"
     },
     "[cpp]": {
         "editor.insertSpaces": true,

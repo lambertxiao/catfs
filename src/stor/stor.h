@@ -5,28 +5,42 @@
 
 using std::string;
 
-namespace catfs {
-  namespace stor {
+namespace catfs
+{
+  namespace stor
+  {
 
-    struct ObjInfo {};
+    struct ObjInfo
+    {
+      uint64_t size;
+      timespec ctime;
+      timespec mtime;
+      uint32_t *uid;
+      uint32_t *gid;
+      mode_t *mode;
+    };
 
-    struct HeadFileReq {
+    struct HeadFileReq
+    {
       string objKey;
     };
-    struct HeadFileResp {
+    struct HeadFileResp
+    {
       ObjInfo obj;
     };
 
-    struct StorOpt {
+    struct StorOpt
+    {
       string bucket;
       string public_key;
       string private_key;
       string endpoint;
     };
 
-    class Stor {
+    class Stor
+    {
     public:
-      virtual HeadFileResp* HeadFile(HeadFileReq* req) = 0;
+      virtual HeadFileResp *HeadFile(HeadFileReq *req) = 0;
     };
   }
 }

@@ -8,9 +8,19 @@
 
 #include <string>
 
-namespace catfs {
-  namespace meta {
-    struct MetaOpt {
+#define USING_TYPES \
+  using types::InodeID; \
+  using types::Inode; \
+  using types::Dentry;
+
+namespace catfs
+{
+  namespace meta
+  {
+    USING_TYPES
+
+    struct MetaOpt
+    {
       uint32_t gid;
       uint32_t uid;
       uint32_t dcache_timeout;
@@ -18,15 +28,17 @@ namespace catfs {
       std::string bucket_prefix;
     };
 
-    class Meta {
+    class Meta
+    {
     public:
+      virtual Inode *get_inode(InodeID ino) = 0;
+      virtual Dentry *find_dentry(InodeID pino, std::string name, bool onlyLocal) = 0;
+
       // virtual types::Dirent *create_dentry(types::InodeID pino, std::string name, types::FileMode mode) = 0;
-      // virtual types::Dirent *find_dentry(types::InodeID pino, std::string name, bool onlyLocal) = 0;
       // virtual types::Dirent *get_dentry(types::InodeID ino) = 0;
       // virtual types::ErrCode remove_dentry(types::InodeID pino, std::string name) = 0;
       // virtual std::string get_dentry_path(types::InodeID ino) = 0;
 
-      // virtual types::Inode* get_inode(types::InodeID ino) = 0;
       // virtual types::ErrCode update_inode_size(types::InodeID ino, uint64_t size, bool sync) = 0;
       // virtual types::ErrCode refresh_inode(types::InodeID ino) = 0;
       // virtual types::ErrCode remove_inode(types::InodeID ino) = 0;
@@ -36,7 +48,6 @@ namespace catfs {
       // virtual void destory() = 0;
     };
 
-   
   }
 }
 #endif

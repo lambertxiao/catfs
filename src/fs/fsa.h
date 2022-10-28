@@ -2,6 +2,9 @@
 #define CATFS_FS_FSA_H_
 
 #include <fmt/core.h>
+
+#include "fmtlog/fmtlog.h"
+
 #include "fs/fuse.h"
 #include "types/inode.h"
 
@@ -42,70 +45,67 @@ namespace catfs {
         }
 
         static void init(void *userdata, struct fuse_conn_info *conn) {
-          std::cout << "fsa-init" << std::endl;
+          logi("fsa init");
         }
 
         static void destroy(void *userdata) {
-          std::cout << "fsa-destroy" << std::endl;
+          logi("fsa destroy");
           free(catfs);
         }
 
         static void lookup(fuse_req_t req, fuse_ino_t parent, const char *name) {
           std::cout << "fsa-lookup" << std::endl;
+          catfs->find_dentry(parent, name);
         }
+
         static void forget(fuse_req_t req, fuse_ino_t ino, uint64_t nlookup) {
           std::cout << "fsa-forget" << std::endl;
         }
+
         static void getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
-          fmt::print("fsa-getattr inode:{}\n", ino);
-          // auto inode = CatFS::getInstance().lookupInode((catfs::types::InodeID)ino);
+          logi("fsa-getattr inode:{}\n", ino);
+          auto inode = catfs->lookup_inode(ino);
+          if (inode == NULL) {
+            fuse_reply_err(req, ENOENT);
+            return;
+          }
 
           struct stat stbuf;
           (void) fi;
 
           memset(&stbuf, 0, sizeof(stbuf));
-          if (hello_stat(ino, &stbuf) == -1)
-            fuse_reply_err(req, ENOENT);
-          else
-            fuse_reply_attr(req, &stbuf, 1.0);
-        }
+          stbuf.st_ino = inode->ino;
+          stbuf.st_mode = inode->mode;
+          stbuf.st_gid = inode->gid;
+          stbuf.st_uid = inode->uid;
+          stbuf.st_size = inode->size;
+          stbuf.st_ctim = inode->ctime;
+          stbuf.st_mtim = inode->mtime;
 
-        static int hello_stat(fuse_ino_t ino, struct stat *stbuf)
-        {
-          stbuf->st_ino = ino;
-          switch (ino) {
-          case 1:
-            stbuf->st_mode = S_IFDIR | 0755;
-            stbuf->st_nlink = 2;
-            break;
-
-          case 2:
-            stbuf->st_mode = S_IFREG | 0444;
-            stbuf->st_nlink = 1;
-            stbuf->st_size = 1024;
-            break;
-
-          default:
-            return -1;
-          }
-          return 0;
+          fuse_reply_attr(req, &stbuf, 1.0);
         }
 
         static void setattr(fuse_req_t req, fuse_ino_t ino, struct stat *attr, int to_set, struct fuse_file_info *fi) {
           std::cout << "fsa-setattr" << std::endl;
+          fuse_reply_err(req, EPERM);
         }
         static void readlink(fuse_req_t req, fuse_ino_t ino) {
           std::cout << "fsa-readlink" << std::endl;
+          fuse_reply_err(req, EPERM);
         }
+
         static void mknod(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t mode, dev_t rdev) {
           std::cout << "fsa-mknod" << std::endl;
         }
+
         static void mkdir(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t mode) {
           std::cout << "fsa-mkdir" << std::endl;
         }
+
         static void unlink(fuse_req_t req, fuse_ino_t parent, const char *name) {
           std::cout << "fsa-unlink" << std::endl;
         }
+
         static void rmdir(fuse_req_t req, fuse_ino_t parent, const char *name) {
           std::cout << "fsa-rmdir" << std::endl;
         }
