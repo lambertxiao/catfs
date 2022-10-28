@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <ctime>
+#include <fcntl.h>
 
 namespace catfs
 {

@@ -3,7 +3,11 @@
 
 namespace catfs {
   namespace stor {
-    HeadFileResp* S3Stor::HeadFile(HeadFileReq* req) {
+    HeadFileResp* S3Stor::head_file(HeadFileReq* req) {
+      return NULL;
+    }
+
+    ListObjectsResp* S3Stor::list_objects(ListObjectsReq* req) {
       return NULL;
     }
   }

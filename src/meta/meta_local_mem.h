@@ -3,7 +3,6 @@
 
 #include <mutex>
 #include <shared_mutex>
-#include <shared_mutex>
 #include <map>
 
 #include "meta/meta_local.h"
@@ -30,13 +29,13 @@ namespace catfs
       LocalMemMeta(MetaOpt &opt);
 
       void save_dentry_index(Dentry *);
-      Dentry *LocalMemMeta::add_child_for_dentry(Dentry *parent, std::string name, Inode *inode);
+      Dentry *add_child_for_dentry(Dentry *parent, std::string name, Inode *inode);
       Inode *obj2inode(stor::ObjInfo& obj, bool is_dir);
       InodeID get_next_inode_id();
 
       Inode *get_inode(InodeID ino) override;
       Inode *update_inode(InodeID ino, InodeUpdateAttr updater, bool sync) override;
-      void *remove_inode(InodeID ino) override;
+      void remove_inode(InodeID ino) override;
       Dentry *get_dentry(InodeID ino) override;
       Dentry *create_dentry(InodeID pino, std::string name, Inode *inode) override;
       Dentry *find_dentry(InodeID pino, std::string name) override;

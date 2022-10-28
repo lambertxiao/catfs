@@ -13,6 +13,7 @@
 #include "stor/stor_s3.h"
 #include "meta/meta.h"
 #include "meta/meta_impl.h"
+#include "meta/meta_local_mem.h"
 
 using std::string;
 using namespace catfs::fs;
@@ -25,6 +26,7 @@ using catfs::meta::LocalMeta;
 using catfs::meta::Meta;
 using catfs::meta::MetaImpl;
 using catfs::meta::MetaOpt;
+using catfs::meta::LocalMemMeta;
 
 void init_catfs(cmdline::parser& parm);
 
@@ -172,7 +174,7 @@ void init_catfs(cmdline::parser& parm)
 		bucket_prefix : bucket_prefix,
 	};
 
-	auto lmeta = std::make_shared<LocalMeta>(meta_opt);
+	auto lmeta = std::make_shared<LocalMemMeta>(meta_opt);
 	std::shared_ptr<Meta> meta = std::make_shared<MetaImpl>(meta_opt, lmeta, stor);
 
 	auto cfs = new CatFS(meta);

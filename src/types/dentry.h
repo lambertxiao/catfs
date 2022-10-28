@@ -4,8 +4,11 @@
 #include <ctime>
 #include <time.h>
 #include <mutex>
+#include <shared_mutex>
 #include <map>
 #include <vector>
+#include <fcntl.h>
+#include "util/time.h"
 
 namespace catfs
 {
@@ -95,8 +98,7 @@ namespace catfs
 
       bool is_expired()
       {
-        timespec now;
-        timespec_get(&now, TIME_UTC);
+        auto now = util::now();
 
         if (ttl.tv_sec == now.tv_sec)
         {
@@ -110,7 +112,7 @@ namespace catfs
 
       bool is_complete()
       {
-        return this->flags & D_COMPLETE == D_COMPLETE;
+        return (this->flags & D_COMPLETE) == D_COMPLETE;
       }
 
       void complete()
@@ -125,12 +127,20 @@ namespace catfs
 
       bool is_dir()
       {
-        return this->inode->mode & S_IFDIR != 0;
+        return (this->inode->mode & S_IFDIR) != 0;
       }
 
       void set_ttl(timespec ttl)
       {
         this->ttl = ttl;
+      }
+
+      void inc_ttl(uint32_t duration) {
+        auto tc = util::now();
+        // timespec tc;
+        // timespec_get(&tc, TIME_UTC);
+        tc.tv_sec += duration;
+        this->ttl = tc;
       }
 
       void update(uint64_t size, timespec ctime, timespec mtime)

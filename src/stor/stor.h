@@ -2,6 +2,7 @@
 #define CATFS_STOR_H_
 
 #include <iostream>
+#include <vector>
 
 using std::string;
 
@@ -18,15 +19,31 @@ namespace catfs
       uint32_t *uid;
       uint32_t *gid;
       mode_t *mode;
+      bool is_dir;
     };
 
     struct HeadFileReq
     {
-      string objKey;
+      string obj_key;
     };
     struct HeadFileResp
     {
-      ObjInfo obj;
+      ObjInfo *obj;
+    };
+
+    struct ListObjectsReq
+    {
+      string delimiter;
+      string prefix;
+      uint32_t max;       
+      string marker;
+    };
+
+    struct ListObjectsResp
+    {
+      bool is_trunc;
+	    string marker;         
+      std::vector<ObjInfo> objs;       
     };
 
     struct StorOpt
@@ -40,7 +57,8 @@ namespace catfs
     class Stor
     {
     public:
-      virtual HeadFileResp *HeadFile(HeadFileReq *req) = 0;
+      virtual HeadFileResp *head_file(HeadFileReq *req) = 0;
+      virtual ListObjectsResp *list_objects(ListObjectsReq *req) = 0;
     };
   }
 }

@@ -1,109 +1,124 @@
 #include "meta/meta.h"
 #include "meta/meta_impl.h"
 #include "types/inode.h"
+#include "stor/stor.h"
+#include "util/time.h"
 
 namespace catfs {
   namespace meta {
     USING_TYPES
 
     Inode* MetaImpl::get_inode(InodeID ino) {
-      return lm.get()->get_inode(ino);
+      return local_meta.get()->get_inode(ino);
     };
 
+    stor::ObjInfo* MetaImpl::get_remote_obj(Dentry& parent, std::string name) {
+      // 1. 检查是否有同名的文件
+      // 2. 检查是否有同名的目录
+      auto fullname = parent.get_full_path_with_slash() + name;
+      return check_dentry_exist(fullname);
+    }
+
+    stor::ObjInfo* MetaImpl::check_dentry_exist(std::string path) {
+      auto req = stor::HeadFileReq{obj_key: path};
+      auto resp = stor->head_file(&req);
+      
+      if (resp->obj == NULL) {
+        auto req = stor::HeadFileReq{obj_key: path+ "/"};
+        auto resp = stor->head_file(&req);
+
+        if (resp != NULL) {
+          return resp->obj;
+        }
+      }
+
+      return resp->obj;
+    }
+
     Dentry* MetaImpl::find_dentry(InodeID pino, std::string name, bool onlyLocal) {
-      auto parent = lm.get()->find_dentry(pino, name);
+      auto dentry = local_meta.get()->find_dentry(pino, name);
+      if (dentry == NULL) {
+        if (onlyLocal) {
+          return NULL;
+        }
 
-      // dentry, err := m.local.FindDentry(pino, name)
-      // if err != nil {
-      //   return nil, err
-      // }
+        auto parent = local_meta->get_dentry(pino);
+        if (parent == NULL) {
+          throw types::InvalidInodeID(pino);
+        }
 
-      // if dentry == nil {
-      //   if onlyLocal {
-      //     return nil, types.ENOENT
-      //   }
+        auto obj = get_remote_obj(*parent, name);
+        if (obj != NULL) {
+          dentry = local_meta->create_dentry_from_obj(pino, name, *obj, obj->is_dir);
+          dentry->inc_ttl(opt.dcache_timeout);
+          return dentry;
+        }
 
-      //   parent := m.local.GetDentry(pino)
-      //   if parent == nil {
-      //     return nil, fmt.Errorf("invalid pino:%d", pino)
-      //   }
+        // 举个例子，如果当前ls的目录为a/b，但服务端存在以a/b/*为前缀的key，需要将a/b的目录在本地创建出来
+        auto prefix = parent->get_full_path_with_slash() + name;
+        auto exist = is_remote_dir_exist(prefix);
+        if (!exist) {
+          return NULL;
+        }
 
-      //   obj, isDir, err := m.getRemoteObject(parent, name)
-      //   if err == nil {
-      //     dentry, err := m.local.CreateDentryFromObj(pino, name, *obj, isDir)
-      //     if err != nil {
-      //       return nil, err
-      //     }
-      //     dentry.SetTTL(time.Now().Add(m.opt.DCacheTTL))
-      //     return dentry, nil
-      //   }
+        // add virtual dir in local
+        dentry = parent->add_child(name, local_meta->create_new_inode(parent->inode->mode, parent->inode->gid, parent->inode->uid));
+        dentry->inc_ttl(opt.dcache_timeout);
+        return dentry;
+      } else {
+        if (!dentry->is_expired()) {
+          return dentry;
+        }
 
-      //   if err != types.ENOENT {
-      //     return nil, err
-      //   }
+        std::string path;
+        if (dentry->is_dir()) {
+          path = dentry->get_full_path_with_slash();
+        } else {
+          path = dentry->get_full_path();
+        }
 
-      //   // 举个例子，如果当前ls的目录为a/b，但服务端存在以a/b/*为前缀的key，需要将a/b的目录在本地创建出来
-      //   dirpath := parent.GetFullPathWithSlash() + name
-      //   exist, err := m.isRemoteDirExist(dirpath)
-      //   if err != nil {
-      //     return nil, err
-      //   }
+        auto req = stor::HeadFileReq{obj_key: path};
+        auto reply = stor->head_file(&req);
 
-      //   if !exist {
-      //     return nil, types.ENOENT
-      //   }
+        if (reply->obj == NULL && dentry->is_dir()) {
+          // local存的dentry可能是virtual dir, 服务端不存在对应的key
+          dentry->inc_ttl(opt.dcache_timeout);
+          return dentry;
+        } 
 
-      //   // add virtual dir in local
-      //   dentry = parent.AddChild(name, m.local.CreateNewInode(parent.Inode.Mode, parent.Inode.Gid, parent.Inode.Uid))
-      //   dentry.SetTTL(time.Now().Add(m.opt.DCacheTTL))
-      //   return dentry, nil
-      // } else {
-      //   if !dentry.IsExpired() {
-      //     return dentry, nil
-      //   }
+        auto obj = reply->obj;
+        mode_t mode;
+        if (obj->mode != NULL) {
+          mode = *obj->mode & 0777;
+        } else {
+          if (dentry->is_dir()) {
+            mode = S_IFDIR | 0755;
+          } else {
+            mode = 0644;
+          }
+        }
 
-      //   var path string
-      //   if dentry.IsDir() {
-      //     path = dentry.GetFullPathWithSlash()
-      //   } else {
-      //     path = dentry.GetFullPath()
-      //   }
+        auto updater = InodeUpdateAttr{
+          size: &obj->size,
+          mode: &mode,
+          uid: obj->uid,
+          gid: obj->gid,
+        };
 
-      //   logg.Dlog.Debugf("pino:%d fpath:%s is expired", pino, path)
-      //   reply, err := m.storage.HeadFile(&storage.HeadFileRequest{Key: path})
-      //   if err != nil {
-      //     if err == types.ENOENT && dentry.IsDir() {
-      //       // local存的dentry可能是virtual dir, 服务端不存在对应的key
-      //       dentry.SetTTL(time.Now().Add(m.opt.DCacheTTL))
-      //       return dentry, nil
-      //     }
-      //     return nil, err
-      //   }
+        local_meta->update_inode(dentry->inode->ino, updater, true);
+        dentry->inc_ttl(opt.dcache_timeout);
+        return dentry;
+      }
+    }
 
-      //   obj := reply.Info
-      //   var mode os.FileMode
-      //   if obj.Mode != nil {
-      //     mode = (os.FileMode(*obj.Mode) & os.ModePerm)
-      //   } else {
-      //     if dentry.IsDir() {
-      //       mode = os.ModeDir | 0755
-      //     } else {
-      //       mode = 0644
-      //     }
-      //   }
-
-      //   update := InodeUpdateAttr{
-      //     Size: &obj.Size, Uid: obj.Uid, Gid: obj.Gid, Mode: &mode,
-      //   }
-
-      //   _, err = m.local.UpdateInode(dentry.Inode.Ino, update, true)
-      //   if err != nil {
-      //     return nil, err
-      //   }
-      //   dentry.SetTTL(time.Now().Add(m.opt.DCacheTTL))
-      //   return dentry, nil
-      // }
-      return NULL;
+    bool MetaImpl::is_remote_dir_exist(std::string path) {
+      auto req = stor::ListObjectsReq{
+        delimiter: "",
+		    prefix:    path,
+		    max:       1,
+      };
+      auto reply = stor->list_objects(&req);
+      return reply->objs.size() > 0;
     }
   }
 }

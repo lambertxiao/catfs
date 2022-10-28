@@ -3,6 +3,7 @@
 
 #include <string>
 #include "meta/meta.h"
+#include "stor/stor.h"
 
 namespace catfs
 {
@@ -25,7 +26,7 @@ namespace catfs
     public:
       virtual Inode *get_inode(InodeID ino) = 0;
       virtual Inode *update_inode(InodeID ino, InodeUpdateAttr updater, bool sync) = 0;
-      virtual void *remove_inode(InodeID ino) = 0;
+      virtual void remove_inode(InodeID ino) = 0;
 
       virtual Dentry *get_dentry(InodeID ino) = 0;
       virtual Dentry *create_dentry(InodeID pino, std::string name, Inode *inode) = 0;

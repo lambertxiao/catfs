@@ -7,7 +7,7 @@ namespace catfs {
     }
 
     const Dentry* CatFS::find_dentry(InodeID pino, std::string name) {
-      return meta->find_dentry(pino, name);
+      return meta->find_dentry(pino, name, false);
     }
   }
 }
