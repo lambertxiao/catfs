@@ -67,7 +67,20 @@ namespace catfs
         open_dir->dentries = meta->load_sub_dentries(open_dir->ino);
       }
 
-      return open_dir->dentries;
+      auto begin = open_dir->dentries.begin() + off;
+      std::vector<Dirent> ret;
+
+      if (off+size >= open_dir->dentries.size())
+      {
+        ret.assign(begin, open_dir->dentries.end());
+      }
+      else
+      {
+        auto end = open_dir->dentries.begin() + off + size;
+        ret.assign(begin, end);
+      }
+      
+      return ret;
     }
 
     void CatFS::release_dir(InodeID ino, HandleID hno)

@@ -233,8 +233,8 @@ namespace catfs
         throw types::ERR_ENOENT();
       }
 
-      dirents.push_back(Dirent{name: ".", ino: ino});
-      dirents.push_back(Dirent{name: "..", ino: ino});
+      dirents.push_back(Dirent{name: ".", inode: dentry->inode});
+      dirents.push_back(Dirent{name: "..", inode: dentry->inode});
 
       if (!dentry->is_complete() || dentry->is_expired())
       {
@@ -243,7 +243,7 @@ namespace catfs
 
       for (auto &d: dentry->children_list())
       {
-        dirents.push_back(Dirent{name: d->name, ino: d->inode->ino});
+        dirents.push_back(Dirent{name: d->name, inode: d->inode});
       }
 
       return dirents;

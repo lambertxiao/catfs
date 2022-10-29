@@ -34,7 +34,7 @@ namespace catfs
 
       static void statfs(fuse_req_t req, fuse_ino_t ino)
       {
-        fmt::print("statfs inode:{}\n", ino);
+        logi("fsa-statfs inode:{}", ino);
 
         struct statvfs stbuf;
         stbuf.f_bsize = BLOCK_SIZE;
@@ -50,12 +50,12 @@ namespace catfs
 
       static void init(void *userdata, struct fuse_conn_info *conn)
       {
-        logi("fsa init");
+        logi("fsa-init");
       }
 
       static void destroy(void *userdata)
       {
-        logi("fsa destroy");
+        logi("fsa-destroy");
         free(catfs);
       }
 
@@ -90,7 +90,7 @@ namespace catfs
 
       static void getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
       {
-        logi("fsa-getattr ino:{}\n", ino);
+        logi("fsa-getattr ino:{}", ino);
         try
         {
           auto inode = catfs->lookup_inode(ino);
@@ -111,6 +111,7 @@ namespace catfs
           fuse_reply_err(req, EIO);
           return;
         }
+        logi("fsa-getattr-done ino:{}", ino);
       }
 
       static void fill_inode_attr(struct stat &stbuf, const types::Inode *inode)
@@ -252,9 +253,10 @@ namespace catfs
 
         try
         {
-          auto handle_id = catfs->opendir(ino);
-          fi->fh = handle_id;
+          auto hno = catfs->opendir(ino);
+          fi->fh = hno;
           fuse_reply_open(req, fi);
+          logi("fsa-opendir-done ino:{} hno:{}", ino, hno);
         }
         catch (types::ERR_ENOENT &e)
         {
@@ -276,46 +278,83 @@ namespace catfs
 
       static void readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
       {
-        logi("fsa-readdir ino:{} hno:{} offset:{}, limit:{}", ino, fi->fh, off, size);
+        logi("fsa-readdir ino:{} hno:{} offset:{} limit:{}", ino, fi->fh, off, size);
         try
         {
           auto dirents = catfs->read_dir(fi->fh, off, size);
-          struct dirbuf b;
+          char *p;
+        	char *buf;
+
+	        size_t rem = size;
+          int idx = 0;
+          buf = (char* )calloc(1, size);
+          p = buf;
+
           for (auto &d : dirents)
           {
-            dirbuf_add(req, &b, d.name.c_str(), d.ino);
+            struct stat st = {
+              .st_ino = d.inode->ino,
+              .st_mode = d.inode->mode,
+            };
+            size_t entsize = fuse_add_direntry(req, p, rem, d.name.c_str(), &st, off+idx);
+            idx++;
+
+            if (entsize > rem) {
+              break;
+            }
+
+            p += entsize;
+		        rem -= entsize;
           }
-          reply_buf_limited(req, b.p, b.size, off, size);
-          free(b.p);
         }
         catch (std::exception &e)
         {
-          loge("readdir error, ino:{} offset:{}, limit:{} err:{}", ino, off, size, e.what());
+          loge("readdir error, ino:{} offset:{} limit:{} err:{}", ino, off, size, e.what());
         }
       }
 
-      static void dirbuf_add(fuse_req_t req, struct dirbuf *b, const char *name, fuse_ino_t ino)
+      static void readdirplus(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
       {
-        struct stat stbuf;
-        size_t oldsize = b->size;
-        b->size += fuse_add_direntry(req, NULL, 0, name, NULL, 0);
-        b->p = (char *)realloc(b->p, b->size);
-        memset(&stbuf, 0, sizeof(stbuf));
-        stbuf.st_ino = ino;
-        fuse_add_direntry(req, b->p + oldsize, b->size - oldsize, name, &stbuf, b->size);
+        logi("fsa-readdirplus ino:{} hno:{} offset:{} limit:{}", ino, fi->fh, off, size);
+        try
+        {
+          auto dirents = catfs->read_dir(fi->fh, off, size);
+
+          char *p;
+        	char *buf;
+	        size_t rem = size;
+          int idx = 0;
+          buf = (char* )calloc(1, size);
+          p = buf;
+
+          for (auto &d : dirents)
+          {
+            logi("dirent name:{} ino:{}", d.name, d.inode->ino);
+            struct fuse_entry_param e;
+            fill_fuse_entry_param(e, d);
+            size_t entsize = fuse_add_direntry_plus(req, p, rem, d.name.c_str(), &e, off+idx);
+            idx++;
+
+            p += entsize;
+		        rem -= entsize;
+          }
+        }
+        catch (std::exception &e)
+        {
+          loge("readdirplus error, ino:{} offset:{} limit:{} err:{}", ino, off, size, e.what());
+    	    fuse_reply_err(req, EIO);
+        }
+        
+        logi("fsa-readdirplus-done ino:{} hno:{}", ino, fi->fh);
       }
 
-      static int reply_buf_limited(fuse_req_t req, const char *buf, size_t bufsize, off_t off, size_t maxsize)
+      static void fill_fuse_entry_param(fuse_entry_param &e, Dirent &dirent)
       {
-        if (off < bufsize)
-          return fuse_reply_buf(req, buf + off,  min(bufsize - off, maxsize));
-        else
-          return fuse_reply_buf(req, NULL, 0);
-      }
-
-      static size_t min(size_t x, size_t y)
-      {
-        return x > y ? y : x;
+        memset(&e, 0, sizeof(e));
+        e.ino = dirent.inode->ino;
+        e.attr_timeout = 1.0;
+        e.entry_timeout = 1.0;
+        fill_inode_attr(e.attr, dirent.inode);
       }
 
       static void releasedir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
@@ -332,10 +371,13 @@ namespace catfs
       {
         std::cout << "fsa-setxattr" << std::endl;
       }
+      
       static void getxattr(fuse_req_t req, fuse_ino_t ino, const char *name, size_t size)
       {
-        std::cout << "fsa-getxattr" << std::endl;
+        logi("fsa-getxattr pino:{} name:{}", ino, name);
+        fuse_reply_err(req, ENOSYS);
       }
+
       static void listxattr(fuse_req_t req, fuse_ino_t ino, size_t size)
       {
         std::cout << "fsa-listxattr" << std::endl;
@@ -388,10 +430,7 @@ namespace catfs
       {
         std::cout << "fsa-fallocate" << std::endl;
       }
-      static void readdirplus(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
-      {
-        std::cout << "fsa-readdirplus" << std::endl;
-      }
+
       static void copy_file_range(fuse_req_t req, fuse_ino_t ino_in, off_t off_in, struct fuse_file_info *fi_in, fuse_ino_t ino_out, off_t off_out, struct fuse_file_info *fi_out, size_t len, int flags)
       {
         std::cout << "fsa-copy_file_range" << std::endl;

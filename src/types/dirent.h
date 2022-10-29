@@ -14,7 +14,7 @@ namespace catfs
     public:
       std::string name;
       // InodeID pino;
-      InodeID ino;
+      Inode* inode;
     };
 
   } // namespace types
