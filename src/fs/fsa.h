@@ -279,6 +279,8 @@ namespace catfs
       static void readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
       {
         logi("fsa-readdir ino:{} hno:{} offset:{} limit:{}", ino, fi->fh, off, size);
+        fuse_reply_err(req, ENOSYS);
+        return;
         try
         {
           auto dirents = catfs->read_dir(fi->fh, off, size);
@@ -306,6 +308,8 @@ namespace catfs
             p += entsize;
 		        rem -= entsize;
           }
+    	    fuse_reply_buf(req, buf, size - rem);
+          free(buf);
         }
         catch (std::exception &e)
         {
@@ -338,6 +342,9 @@ namespace catfs
             p += entsize;
 		        rem -= entsize;
           }
+
+    	    fuse_reply_buf(req, buf, size - rem);
+          free(buf);
         }
         catch (std::exception &e)
         {
@@ -366,10 +373,12 @@ namespace catfs
       static void fsyncdir(fuse_req_t req, fuse_ino_t ino, int datasync, struct fuse_file_info *fi)
       {
         std::cout << "fsa-fsyncdir" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void setxattr(fuse_req_t req, fuse_ino_t ino, const char *name, const char *value, size_t size, int flags)
       {
         std::cout << "fsa-setxattr" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       
       static void getxattr(fuse_req_t req, fuse_ino_t ino, const char *name, size_t size)
@@ -381,14 +390,17 @@ namespace catfs
       static void listxattr(fuse_req_t req, fuse_ino_t ino, size_t size)
       {
         std::cout << "fsa-listxattr" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void removexattr(fuse_req_t req, fuse_ino_t ino, const char *name)
       {
         std::cout << "fsa-removexattr" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void access(fuse_req_t req, fuse_ino_t ino, int mask)
       {
-        std::cout << "fsa-access" << std::endl;
+        logi("fsa-access ino:{} mask:{}", ino, mask);
+        fuse_reply_err(req, ENOSYS);
       }
       static void create(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t mode, struct fuse_file_info *fi)
       {
@@ -397,47 +409,58 @@ namespace catfs
       static void getlk(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi, struct flock *lock)
       {
         std::cout << "fsa-getlk" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void setlk(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi, struct flock *lock, int sleep)
       {
         std::cout << "fsa-setlk" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void bmap(fuse_req_t req, fuse_ino_t ino, size_t blocksize, uint64_t idx)
       {
         std::cout << "fsa-bmap" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void poll(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi, struct fuse_pollhandle *ph)
       {
         std::cout << "fsa-poll" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void write_buf(fuse_req_t req, fuse_ino_t ino, struct fuse_bufvec *bufv, off_t off, struct fuse_file_info *fi)
       {
         std::cout << "fsa-write_buf" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void retrieve_reply(fuse_req_t req, void *cookie, fuse_ino_t ino, off_t offset, struct fuse_bufvec *bufv)
       {
         std::cout << "fsa-retrieve_reply" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void forget_multi(fuse_req_t req, size_t count, struct fuse_forget_data *forgets)
       {
         std::cout << "fsa-forget_multi" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void flock(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi, int op)
       {
         std::cout << "fsa-flock" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void fallocate(fuse_req_t req, fuse_ino_t ino, int mode, off_t offset, off_t length, struct fuse_file_info *fi)
       {
         std::cout << "fsa-fallocate" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
 
       static void copy_file_range(fuse_req_t req, fuse_ino_t ino_in, off_t off_in, struct fuse_file_info *fi_in, fuse_ino_t ino_out, off_t off_out, struct fuse_file_info *fi_out, size_t len, int flags)
       {
         std::cout << "fsa-copy_file_range" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
       static void lseek(fuse_req_t req, fuse_ino_t ino, off_t off, int whence, struct fuse_file_info *fi)
       {
         std::cout << "fsa-lseek" << std::endl;
+        fuse_reply_err(req, ENOSYS);
       }
     };
 
