@@ -27,6 +27,18 @@ namespace catfs
       ERR_ENOTEMPTY() : logic_error("directory not empty") {}
     };
 
+    class ERR_ENOENT : public std::logic_error
+    {
+    public:
+      ERR_ENOENT() : logic_error("no such file or directory") {}
+    };
+
+    class ERR_ENOTDIR : public std::logic_error
+    {
+    public:
+      ERR_ENOTDIR() : logic_error("not a directory") {}
+    };
+
     // EEXIST    error = errors.New("file exists")
     // EINVAL    error = errors.New("invalid argument")
     // EIO       error = errors.New("input/output error")

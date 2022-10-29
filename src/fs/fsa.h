@@ -2,9 +2,8 @@
 #define CATFS_FS_FSA_H_
 
 #include <fmt/core.h>
-
+#include <functional>
 #include "fmtlog/fmtlog.h"
-
 #include "fs/fuse.h"
 #include "types/inode.h"
 
@@ -213,7 +212,7 @@ namespace catfs
       {
         std::cout << "fsa-symlink" << std::endl;
       }
-      
+
       static void rename(fuse_req_t req, fuse_ino_t parent, const char *name, fuse_ino_t newparent, const char *newname, unsigned int flags)
       {
         std::cout << "fsa-rename" << std::endl;
@@ -246,18 +245,85 @@ namespace catfs
       {
         std::cout << "fsa-fsync" << std::endl;
       }
+
       static void opendir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
       {
-        std::cout << "fsa-opendir" << std::endl;
+        logi("fsa-opendir ino:{}", ino);
+
+        try
+        {
+          auto handle_id = catfs->opendir(ino);
+          fi->fh = handle_id;
+          fuse_reply_open(req, fi);
+        }
+        catch (types::ERR_ENOENT &e)
+        {
+          loge("opendir error, ino:{} err:{}", ino, e.what());
+          fuse_reply_err(req, ENOENT);
+        }
+        catch (std::exception &e)
+        {
+          loge("opendir error, ino:{} err:{}", ino, e.what());
+          fuse_reply_err(req, EIO);
+        }
       }
+
+      struct dirbuf
+      {
+        char *p;
+        size_t size;
+      };
+
       static void readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
       {
-        std::cout << "fsa-readdir" << std::endl;
+        logi("fsa-readdir ino:{} hno:{} offset:{}, limit:{}", ino, fi->fh, off, size);
+        try
+        {
+          auto dirents = catfs->read_dir(fi->fh, off, size);
+          struct dirbuf b;
+          for (auto &d : dirents)
+          {
+            dirbuf_add(req, &b, d.name.c_str(), d.ino);
+          }
+          reply_buf_limited(req, b.p, b.size, off, size);
+          free(b.p);
+        }
+        catch (std::exception &e)
+        {
+          loge("readdir error, ino:{} offset:{}, limit:{} err:{}", ino, off, size, e.what());
+        }
       }
+
+      static void dirbuf_add(fuse_req_t req, struct dirbuf *b, const char *name, fuse_ino_t ino)
+      {
+        struct stat stbuf;
+        size_t oldsize = b->size;
+        b->size += fuse_add_direntry(req, NULL, 0, name, NULL, 0);
+        b->p = (char *)realloc(b->p, b->size);
+        memset(&stbuf, 0, sizeof(stbuf));
+        stbuf.st_ino = ino;
+        fuse_add_direntry(req, b->p + oldsize, b->size - oldsize, name, &stbuf, b->size);
+      }
+
+      static int reply_buf_limited(fuse_req_t req, const char *buf, size_t bufsize, off_t off, size_t maxsize)
+      {
+        if (off < bufsize)
+          return fuse_reply_buf(req, buf + off,  min(bufsize - off, maxsize));
+        else
+          return fuse_reply_buf(req, NULL, 0);
+      }
+
+      static size_t min(size_t x, size_t y)
+      {
+        return x > y ? y : x;
+      }
+
       static void releasedir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
       {
-        std::cout << "fsa-releasedir" << std::endl;
+        logi("fsa-releasedir ino:{} hno:{}", ino, fi->fh);
+        catfs->release_dir(ino, fi->fh);
       }
+
       static void fsyncdir(fuse_req_t req, fuse_ino_t ino, int datasync, struct fuse_file_info *fi)
       {
         std::cout << "fsa-fsyncdir" << std::endl;

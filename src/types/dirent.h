@@ -13,8 +13,8 @@ namespace catfs
     {
     public:
       std::string name;
-      InodeID pino;
-      Inode inode;
+      // InodeID pino;
+      InodeID ino;
     };
 
   } // namespace types

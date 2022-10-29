@@ -152,33 +152,38 @@ namespace catfs
     Dentry *MetaImpl::create_dentry(InodeID pino, std::string name, mode_t mode)
     {
       auto dentry = find_dentry(pino, name, false);
-      if (dentry != NULL) {
+      if (dentry != NULL)
+      {
         return dentry;
       }
 
       auto parent = local_meta->get_dentry(pino);
 
       std::string obj_key;
-      if (parent->is_root()) {
+      if (parent->is_root())
+      {
         obj_key = name;
-      } else {
+      }
+      else
+      {
         obj_key = parent->get_full_path() + "/" + name;
       }
 
-      if ((mode & S_IFDIR) != 0) {
+      if ((mode & S_IFDIR) != 0)
+      {
         obj_key += "/";
       }
 
       std::map<string, string> meta_data;
-	    meta_data["mode"] = mode;
-	    meta_data["uid"] = parent->inode->uid;
-	    meta_data["gid"] = parent->inode->gid;
+      meta_data["mode"] = mode;
+      meta_data["uid"] = parent->inode->uid;
+      meta_data["gid"] = parent->inode->gid;
 
       auto req = stor::PutFileReq{
-        obj_key: obj_key,
-        meta_data: meta_data,
+        obj_key : obj_key,
+        meta_data : meta_data,
       };
-      
+
       stor->put_file(&req);
       auto inode = local_meta->create_new_inode(mode, parent->inode->gid, parent->inode->uid);
       dentry = local_meta->create_dentry(pino, name, inode);
@@ -186,26 +191,67 @@ namespace catfs
       return dentry;
     }
 
-    void MetaImpl::remove_dentry(InodeID pino, std::string name) {
+    void MetaImpl::remove_dentry(InodeID pino, std::string name)
+    {
       auto dentry = find_dentry(pino, name, false);
-      if (dentry == NULL) {
+      if (dentry == NULL)
+      {
         return;
       }
 
       auto fullpath = dentry->get_full_path();
-      if (!dentry->is_dir()) {
-        auto req = stor::DeleteFileReq{obj_key: fullpath};
+      if (!dentry->is_dir())
+      {
+        auto req = stor::DeleteFileReq{obj_key : fullpath};
         stor->delete_file(&req);
-      } else {
-        if (dentry->child_count() != 0) {
+      }
+      else
+      {
+        if (dentry->child_count() != 0)
+        {
           throw types::ERR_ENOTEMPTY();
         }
 
-        auto req = stor::DeleteFileReq{obj_key: fullpath + "/"};
+        auto req = stor::DeleteFileReq{obj_key : fullpath + "/"};
         stor->delete_file(&req);
       }
 
       local_meta->remove_dentry(pino, name);
+    }
+
+    Dentry* MetaImpl::get_dentry(InodeID ino)
+    {
+      return local_meta->get_dentry(ino);
+    }
+
+    std::vector<Dirent> MetaImpl::load_sub_dentries(InodeID ino) 
+    {
+      std::vector<Dirent> dirents;
+      auto dentry = local_meta->get_dentry(ino);
+      if (dentry == NULL)
+      {
+        throw types::ERR_ENOENT();
+      }
+
+      dirents.push_back(Dirent{name: ".", ino: ino});
+      dirents.push_back(Dirent{name: "..", ino: ino});
+
+      if (!dentry->is_complete() || dentry->is_expired())
+      {
+        refresh_sub_dentries(*dentry, false);
+      }
+
+      for (auto &d: dentry->children_list())
+      {
+        dirents.push_back(Dirent{name: d->name, ino: d->inode->ino});
+      }
+
+      return dirents;
+    } 
+
+    void MetaImpl::refresh_sub_dentries(Dentry& dentry, bool recursive)
+    {
+      auto prefix = dentry.get_full_path_with_slash();
     }
   }
 }
