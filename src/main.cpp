@@ -1,6 +1,7 @@
 #include <iostream>
 #include <memory>
 #include <exception>
+#include <filesystem>
 
 #include "fmtlog/fmtlog.h"
 #include "cmdline/cmdline.h"
@@ -28,98 +29,17 @@ using catfs::meta::Meta;
 using catfs::meta::MetaImpl;
 using catfs::meta::MetaOpt;
 
-void init_catfs(cmdline::parser &parm);
-
-void set_cmdline(cmdline::parser &parm)
+void create_log_dir(string log_dir)
 {
-	parm.add<string>("bucket", 'b', "bucket name", true, "");
-	parm.add<string>("mount", 'm', "mount point", true, "");
-	parm.add<string>("bucket_prefix", '\0', "bucket key prefix", false, "");
-	parm.add<string>("public_key", '\0', "public key", false, "");
-	parm.add<string>("private_key", '\0', "private key", false, "");
-	parm.add<string>("endpoint", '\0', "storage backend endpoint", false, "");
-	parm.add<string>("stor_backend", '\0', "specified storage backend", false, "s3");
-	parm.add<string>("passwd", '\0', "specify access file", false, "/etc/catfs/catfs.conf");
+	auto mkdirs = "mkdir -p " + log_dir;
+	auto logfile_path = log_dir + "/catfs.log";
+	system(mkdirs.c_str());
 
-	parm.add<uint32_t>("gid", '\0', "gid", false, 0);
-	parm.add<uint32_t>("uid", '\0', "uid", false, 0);
-	parm.add<uint32_t>("dcache_timeout", '\0', "dentry cache timeout, unit is seconds", false, 60 * 5);
-	parm.add<uint32_t>("retry", '\0', "number of times to retry a failed I/O", false, 3);
-	parm.add<uint32_t>("parallel", '\0', "number of parallel I/O thread", false, 32);
-	parm.add<string>("level", '\0', "set log level: error/warn/info/debug", false, "info");
-	parm.add<string>("log_dir", '\0', "set log dir", false, "/tmp/us3fs_logdir");
+	std::ofstream logfile;
+	logfile.open(logfile_path.c_str(), std::ios_base::app);
+	logfile.close();
 
-	parm.add("foreground", 'f', "running in foreground");
-	parm.add("singlethread", '\0', "singlethread");
-	parm.add<u_int>("max_idle_threads", '\0', "max_idle_threads", false, 4);
-}
-
-int main(int argc, char **argv)
-{
-	try
-	{
-		fmtlog::flushOn(fmtlog::INF);
-		fmtlog::startPollingThread(1);
-		fmtlog::setLogFile("./catfs.log");
-
-		logi("start catfs");
-		cmdline::parser parm;
-		set_cmdline(parm);
-		parm.parse_check(argc, argv);
-
-		init_catfs(parm);
-
-		auto mount = parm.get<string>("mount");
-		const char *mp = mount.data();
-		struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
-		int ret = -1;
-
-		args.argc = 3;
-		// args.argv = (char **)&mp;
-		args.argv[0] = (char*)mp;
-		args.argv[1] = (char*)"-o";
-		args.argv[2] = (char*)"auto_unmount";
-
-		struct fuse_session *se = fuse_session_new(&args, &catfs_oper, sizeof(catfs_oper), NULL);
-
-		if (se == NULL)
-			goto err_out1;
-
-		if (fuse_set_signal_handlers(se) != 0)
-			goto err_out2;
-
-		if (fuse_session_mount(se, mp) != 0)
-			goto err_out3;
-
-		fuse_daemonize(parm.exist("foreground"));
-
-		/* Block until ctrl+c or fusermount -u */
-		if (parm.exist("singlethread"))
-			ret = fuse_session_loop(se);
-		else
-		{
-			struct fuse_loop_config config;
-			config.max_idle_threads = parm.get<u_int>("max_idle_threads");
-			ret = fuse_session_loop_mt(se, &config);
-		}
-
-		fuse_session_unmount(se);
-	err_out3:
-		fuse_remove_signal_handlers(se);
-	err_out2:
-		fuse_session_destroy(se);
-	err_out1:
-		fuse_opt_free_args(&args);
-
-		return ret ? 1 : 0;
-	}
-	catch (std::exception &e)
-	{
-		loge("start catfs failed, err: {}", e.what());
-		fmtlog::poll();
-		return 0;
-	}
-	return 0;
+	fmtlog::setLogFile(logfile_path.c_str());
 }
 
 void init_catfs(cmdline::parser &parm)
@@ -185,3 +105,99 @@ void init_catfs(cmdline::parser &parm)
 	auto cfs = new CatFS(meta);
 	FuseAdapter::init_catfs(cfs);
 };
+
+void set_cmdline(cmdline::parser &parm)
+{
+	parm.add<string>("bucket", 'b', "bucket name", true, "");
+	parm.add<string>("mount", 'm', "mount point", true, "");
+	parm.add<string>("bucket_prefix", '\0', "bucket key prefix", false, "");
+	parm.add<string>("public_key", '\0', "public key", false, "");
+	parm.add<string>("private_key", '\0', "private key", false, "");
+	parm.add<string>("endpoint", '\0', "storage backend endpoint", false, "");
+	parm.add<string>("stor_backend", '\0', "specified storage backend", false, "s3");
+	parm.add<string>("passwd", '\0', "specify access file", false, "/etc/catfs/catfs.conf");
+
+	parm.add<uint32_t>("gid", '\0', "gid", false, 0);
+	parm.add<uint32_t>("uid", '\0', "uid", false, 0);
+	parm.add<uint32_t>("dcache_timeout", '\0', "dentry cache timeout, unit is seconds", false, 60 * 5);
+	parm.add<uint32_t>("retry", '\0', "number of times to retry a failed I/O", false, 3);
+	parm.add<uint32_t>("parallel", '\0', "number of parallel I/O thread", false, 32);
+	parm.add<string>("level", '\0', "set log level: error/warn/info/debug", false, "info");
+	parm.add<string>("log_dir", '\0', "set log dir", false, "");
+
+	parm.add("foreground", 'f', "running in foreground");
+	parm.add("singlethread", '\0', "singlethread");
+	parm.add<u_int>("max_idle_threads", '\0', "max_idle_threads", false, 4);
+}
+
+int main(int argc, char **argv)
+{
+	try
+	{
+		fmtlog::flushOn(fmtlog::INF);
+		fmtlog::startPollingThread(1);
+
+		logi("start catfs");
+		cmdline::parser parm;
+		set_cmdline(parm);
+		parm.parse_check(argc, argv);
+
+		auto log_dir = parm.get<string>("log_dir");
+		if (log_dir != "")
+		{
+			create_log_dir(log_dir);
+		}
+
+		init_catfs(parm);
+
+		auto mount = parm.get<string>("mount");
+		const char *mp = mount.data();
+		struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+		int ret = -1;
+
+		args.argc = 3;
+		args.argv[0] = (char*)mp;
+		args.argv[1] = (char*)"-o";
+		args.argv[2] = (char*)"auto_unmount";
+
+		struct fuse_session *se = fuse_session_new(&args, &catfs_oper, sizeof(catfs_oper), NULL);
+
+		if (se == NULL)
+			goto err_out1;
+
+		if (fuse_set_signal_handlers(se) != 0)
+			goto err_out2;
+
+		if (fuse_session_mount(se, mp) != 0)
+			goto err_out3;
+
+		fuse_daemonize(parm.exist("foreground"));
+
+		/* Block until ctrl+c or fusermount -u */
+		if (parm.exist("singlethread"))
+			ret = fuse_session_loop(se);
+		else
+		{
+			struct fuse_loop_config config;
+			config.max_idle_threads = parm.get<u_int>("max_idle_threads");
+			ret = fuse_session_loop_mt(se, &config);
+		}
+
+		fuse_session_unmount(se);
+	err_out3:
+		fuse_remove_signal_handlers(se);
+	err_out2:
+		fuse_session_destroy(se);
+	err_out1:
+		fuse_opt_free_args(&args);
+
+		return ret ? 1 : 0;
+	}
+	catch (std::exception &e)
+	{
+		loge("start catfs failed, err: {}", e.what());
+		fmtlog::poll();
+		return 0;
+	}
+	return 0;
+}
