@@ -279,8 +279,8 @@ namespace catfs
       static void readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
       {
         logi("fsa-readdir ino:{} hno:{} offset:{} limit:{}", ino, fi->fh, off, size);
-        fuse_reply_err(req, ENOSYS);
-        return;
+        // fuse_reply_err(req, ENOSYS);
+        // return;
         try
         {
           auto dirents = catfs->read_dir(fi->fh, off, size);
@@ -294,17 +294,17 @@ namespace catfs
 
           for (auto &d : dirents)
           {
+            if (d.name == "." || d.name == "..")
+            {
+              continue;
+            }
             struct stat st = {
               .st_ino = d.inode->ino,
               .st_mode = d.inode->mode,
             };
+            logi("dirent ino:{} mode:{}", st.st_ino, st.st_mode);
             size_t entsize = fuse_add_direntry(req, p, rem, d.name.c_str(), &st, off+idx);
             idx++;
-
-            if (entsize > rem) {
-              break;
-            }
-
             p += entsize;
 		        rem -= entsize;
           }
@@ -314,7 +314,9 @@ namespace catfs
         catch (std::exception &e)
         {
           loge("readdir error, ino:{} offset:{} limit:{} err:{}", ino, off, size, e.what());
+    	    fuse_reply_err(req, EIO);
         }
+        logi("fsa-readdir-done ino:{} hno:{}", ino, fi->fh);
       }
 
       static void readdirplus(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
@@ -351,7 +353,7 @@ namespace catfs
           loge("readdirplus error, ino:{} offset:{} limit:{} err:{}", ino, off, size, e.what());
     	    fuse_reply_err(req, EIO);
         }
-        
+
         logi("fsa-readdirplus-done ino:{} hno:{}", ino, fi->fh);
       }
 
@@ -380,7 +382,7 @@ namespace catfs
         std::cout << "fsa-setxattr" << std::endl;
         fuse_reply_err(req, ENOSYS);
       }
-      
+
       static void getxattr(fuse_req_t req, fuse_ino_t ino, const char *name, size_t size)
       {
         logi("fsa-getxattr pino:{} name:{}", ino, name);

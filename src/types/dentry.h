@@ -34,6 +34,11 @@ namespace catfs
         this->inode = inode;
       }
 
+      ~Dentry()
+      {
+        delete inode;
+      }
+
       bool is_root()
       {
         return this->inode->ino == ROOT_INODE_ID;

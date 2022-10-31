@@ -36,7 +36,7 @@ namespace catfs
     HandleID CatFS::opendir(InodeID ino)
     {
       auto dentry = meta->get_dentry(ino);
-      if (dentry == NULL) 
+      if (dentry == NULL)
       {
         throw types::ERR_ENOENT();
       }
@@ -67,6 +67,8 @@ namespace catfs
         open_dir->dentries = meta->load_sub_dentries(open_dir->ino);
       }
 
+      if (off != 0) off++;
+
       auto begin = open_dir->dentries.begin() + off;
       std::vector<Dirent> ret;
 
@@ -79,7 +81,7 @@ namespace catfs
         auto end = open_dir->dentries.begin() + off + size;
         ret.assign(begin, end);
       }
-      
+
       return ret;
     }
 

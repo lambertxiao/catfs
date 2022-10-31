@@ -22,13 +22,13 @@ using catfs::stor::S3Stor;
 using catfs::stor::Stor;
 using catfs::stor::StorOpt;
 
+using catfs::meta::LocalMemMeta;
 using catfs::meta::LocalMeta;
 using catfs::meta::Meta;
 using catfs::meta::MetaImpl;
 using catfs::meta::MetaOpt;
-using catfs::meta::LocalMemMeta;
 
-void init_catfs(cmdline::parser& parm);
+void init_catfs(cmdline::parser &parm);
 
 void set_cmdline(cmdline::parser &parm)
 {
@@ -60,6 +60,7 @@ int main(int argc, char **argv)
 	{
 		fmtlog::flushOn(fmtlog::INF);
 		fmtlog::startPollingThread(1);
+		fmtlog::setLogFile("./catfs.log");
 
 		logi("start catfs");
 		cmdline::parser parm;
@@ -73,8 +74,11 @@ int main(int argc, char **argv)
 		struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
 		int ret = -1;
 
-		args.argc = 1;
-		args.argv = (char **)&mp;
+		args.argc = 3;
+		// args.argv = (char **)&mp;
+		args.argv[0] = (char*)mp;
+		args.argv[1] = (char*)"-o";
+		args.argv[2] = (char*)"auto_unmount";
 
 		struct fuse_session *se = fuse_session_new(&args, &catfs_oper, sizeof(catfs_oper), NULL);
 
@@ -118,7 +122,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void init_catfs(cmdline::parser& parm)
+void init_catfs(cmdline::parser &parm)
 {
 	auto passwd = parm.get<string>("passwd");
 	auto passwd_content = YAML::LoadFile(passwd);

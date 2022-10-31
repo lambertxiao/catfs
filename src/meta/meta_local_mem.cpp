@@ -31,6 +31,14 @@ namespace catfs
 
       this->root_dentry = new types::Dentry("", inode);
       this->save_dentry_index(this->root_dentry);
+
+      auto f1 = new types::Inode();
+      f1->ino = this->get_next_inode_id();
+      f1->mode = S_IFREG | 0755;
+      f1->uid = opt.uid;
+      f1->gid = opt.uid;
+      auto d1 = this->root_dentry->add_child("f1", f1);
+      this->save_dentry_index(d1);
     }
 
     void LocalMemMeta::save_dentry_index(types::Dentry* d) {
