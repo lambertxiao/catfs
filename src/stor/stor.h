@@ -81,10 +81,10 @@ namespace catfs
     class Stor
     {
     public:
-      virtual HeadFileResp *head_file(HeadFileReq *req) = 0;
-      virtual ListObjectsResp *list_objects(ListObjectsReq *req) = 0;
-      virtual PutFileResp *put_file(PutFileReq *req) = 0;
-      virtual DeleteFileResp *delete_file(DeleteFileReq *req) = 0;
+      virtual HeadFileResp *head_file(HeadFileReq &req) = 0;
+      virtual ListObjectsResp *list_objects(ListObjectsReq &req) = 0;
+      virtual PutFileResp *put_file(PutFileReq &req) = 0;
+      virtual DeleteFileResp *delete_file(DeleteFileReq &req) = 0;
     };
   }
 }

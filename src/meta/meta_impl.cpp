@@ -16,7 +16,7 @@ namespace catfs
       return local_meta.get()->get_inode(ino);
     };
 
-    stor::ObjInfo *MetaImpl::get_remote_obj(Dentry &parent, std::string name)
+    stor::ObjInfo *MetaImpl::get_remote_obj(Dentry &parent, const std::string &name)
     {
       // 1. 检查是否有同名的文件
       // 2. 检查是否有同名的目录
@@ -24,15 +24,15 @@ namespace catfs
       return check_dentry_exist(fullname);
     }
 
-    stor::ObjInfo *MetaImpl::check_dentry_exist(std::string path)
+    stor::ObjInfo *MetaImpl::check_dentry_exist(const std::string &path)
     {
       auto req = stor::HeadFileReq{obj_key : path};
-      auto resp = stor->head_file(&req);
+      auto resp = stor->head_file(req);
 
       if (resp->obj == NULL)
       {
         auto req = stor::HeadFileReq{obj_key : path + "/"};
-        auto resp = stor->head_file(&req);
+        auto resp = stor->head_file(req);
 
         if (resp != NULL)
         {
@@ -43,7 +43,7 @@ namespace catfs
       return resp->obj;
     }
 
-    Dentry *MetaImpl::find_dentry(InodeID pino, std::string name, bool onlyLocal)
+    Dentry *MetaImpl::find_dentry(InodeID pino, const std::string &name, bool onlyLocal)
     {
       auto dentry = local_meta.get()->find_dentry(pino, name);
       if (dentry == NULL)
@@ -98,7 +98,7 @@ namespace catfs
         }
 
         auto req = stor::HeadFileReq{obj_key : path};
-        auto reply = stor->head_file(&req);
+        auto reply = stor->head_file(req);
 
         if (reply->obj == NULL && dentry->is_dir())
         {
@@ -138,18 +138,18 @@ namespace catfs
       }
     }
 
-    bool MetaImpl::is_remote_dir_exist(std::string path)
+    bool MetaImpl::is_remote_dir_exist(const std::string &path)
     {
       auto req = stor::ListObjectsReq{
         delimiter : "",
         prefix : path,
         max : 1,
       };
-      auto reply = stor->list_objects(&req);
+      auto reply = stor->list_objects(req);
       return reply->objs.size() > 0;
     }
 
-    Dentry *MetaImpl::create_dentry(InodeID pino, std::string name, mode_t mode)
+    Dentry *MetaImpl::create_dentry(InodeID pino, const std::string &name, mode_t mode)
     {
       auto dentry = find_dentry(pino, name, false);
       if (dentry != NULL)
@@ -184,14 +184,14 @@ namespace catfs
         meta_data : meta_data,
       };
 
-      stor->put_file(&req);
+      stor->put_file(req);
       auto inode = local_meta->create_new_inode(mode, parent->inode->gid, parent->inode->uid);
       dentry = local_meta->create_dentry(pino, name, inode);
 
       return dentry;
     }
 
-    void MetaImpl::remove_dentry(InodeID pino, std::string name)
+    void MetaImpl::remove_dentry(InodeID pino, const std::string &name)
     {
       auto dentry = find_dentry(pino, name, false);
       if (dentry == NULL)
@@ -203,7 +203,7 @@ namespace catfs
       if (!dentry->is_dir())
       {
         auto req = stor::DeleteFileReq{obj_key : fullpath};
-        stor->delete_file(&req);
+        stor->delete_file(req);
       }
       else
       {
@@ -213,7 +213,7 @@ namespace catfs
         }
 
         auto req = stor::DeleteFileReq{obj_key : fullpath + "/"};
-        stor->delete_file(&req);
+        stor->delete_file(req);
       }
 
       local_meta->remove_dentry(pino, name);

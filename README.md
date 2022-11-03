@@ -48,6 +48,12 @@ git submodule update --init
 ./build.sh
 ```
 
+安装minio-cpp
+
+```
+vcpkg install minio-cpp
+```
+
 
 确保 `/usr/local/lib/catfs` 里有如下文件：
 
@@ -59,3 +65,7 @@ git submodule update --init
 ├── libgflags.a
 └── libglog.a
 ```
+
+
+pugixml
+openssl

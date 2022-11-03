@@ -18,8 +18,8 @@ namespace catfs
         this->opt = opt;
       }
 
-      virtual HeadFileResp *head_file(HeadFileReq *req) override;
-      virtual ListObjectsResp *list_objects(ListObjectsReq *req) override;
+      virtual HeadFileResp *head_file(HeadFileReq &req) override;
+      virtual ListObjectsResp *list_objects(ListObjectsReq &req) override;
     };
   }
 }

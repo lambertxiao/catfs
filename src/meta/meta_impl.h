@@ -32,15 +32,15 @@ namespace catfs
       }
 
       Inode *get_inode(InodeID ino) override;
-      Dentry *find_dentry(InodeID pino, std::string name, bool onlyLocal) override;
-      Dentry *create_dentry(InodeID pino, std::string name, mode_t mode) override;
-      void remove_dentry(InodeID pino, std::string name) override;
+      Dentry *find_dentry(InodeID pino, const std::string &name, bool onlyLocal) override;
+      Dentry *create_dentry(InodeID pino, const std::string &name, mode_t mode) override;
+      void remove_dentry(InodeID pino, const std::string &name) override;
       Dentry *get_dentry(InodeID ino) override;
       std::vector<types::Dirent> load_sub_dentries(InodeID ino) override;
 
-      stor::ObjInfo *get_remote_obj(Dentry& parent, std::string name);
-      stor::ObjInfo *check_dentry_exist(std::string path);
-      bool is_remote_dir_exist(std::string path);
+      stor::ObjInfo *get_remote_obj(Dentry& parent, const std::string &name);
+      stor::ObjInfo *check_dentry_exist(const std::string &path);
+      bool is_remote_dir_exist(const std::string &path);
       void refresh_sub_dentries(Dentry& dentry, bool recursive);
     };
   }

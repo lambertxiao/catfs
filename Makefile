@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	./do_cmake.sh && cd build && make
+	./do_cmake.sh && cd build && make -j 6
 
 .PHONY: run
 run: build
