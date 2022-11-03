@@ -2,9 +2,8 @@ project(catfs)
 
 set(CODE_ROOT "${PROJECT_SOURCE_DIR}/src")
 include_directories(${CODE_ROOT})
-
-include_directories(/usr/local/catfs/include)
-link_directories(/usr/local/catfs/lib)
+include_directories("${PROJECT_SOURCE_DIR}/deps/include")
+link_directories("${PROJECT_SOURCE_DIR}/deps/lib")
 
 aux_source_directory("${CODE_ROOT}/fs" FS)
 aux_source_directory("${CODE_ROOT}/meta" META)

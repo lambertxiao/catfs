@@ -14,11 +14,17 @@ namespace catfs
       logi("s3stor headfile path:{}", req.obj_key);
 
       minio::s3::StatObjectArgs args;
+      args.bucket = opt.bucket;
       args.object = req.obj_key;
+
       auto resp = client->StatObject(args);
 
-      logi("s3stor headfile path:{} resp:{}", req.obj_key, resp);
+      if (resp)
+      {
 
+      }
+
+      logi("s3stor headfile path:{} resp:{}", req.obj_key, resp);
       return NULL;
     }
 

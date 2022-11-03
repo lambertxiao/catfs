@@ -114,7 +114,7 @@ void set_cmdline(cmdline::parser &parm)
 	parm.add<string>("private_key", '\0', "private key", false, "");
 	parm.add<string>("endpoint", '\0', "storage backend endpoint", false, "");
 	parm.add<string>("stor_backend", '\0', "specified storage backend", false, "s3");
-	parm.add<string>("passwd", '\0', "specify access file", false, "/etc/catfs/catfs.conf");
+	parm.add<string>("passwd", '\0', "specify access file", false, "/etc/catfs/catfs.yaml");
 
 	parm.add<uint32_t>("gid", '\0', "gid", false, 0);
 	parm.add<uint32_t>("uid", '\0', "uid", false, 0);

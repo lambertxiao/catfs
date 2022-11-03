@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/root/workspace/catfs/bin/catfs",
-            "args": ["-b", "xsx", "-m", "/root/workspace/catfs/bin/mnt", "-f"],
+            "args": ["-b", "lambert-sh", "-m", "/root/workspace/catfs/bin/mnt", "-f"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

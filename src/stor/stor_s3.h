@@ -21,6 +21,7 @@ namespace catfs
     public:
       S3Stor(const StorOpt &opt)
       {
+        this->opt = opt;
         base_url = minio::s3::BaseUrl(opt.endpoint, false);
         provider = new minio::creds::StaticProvider(opt.public_key, opt.private_key);
         client = new minio::s3::Client(base_url, provider);
