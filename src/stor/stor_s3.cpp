@@ -46,6 +46,10 @@ namespace catfs
 
       auto ret = s3_client->ListObjects(args);
 
+      //
+      //
+      logi("s3stor list_objects ret");
+
       for (; ret; ret++) {
         minio::s3::Item item = *ret;
         if (item) {

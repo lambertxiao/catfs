@@ -133,10 +133,10 @@ int main(int argc, char **argv)
 {
 	try
 	{
-		fmtlog::flushOn(fmtlog::INF);
+		fmtlog::setLogLevel(fmtlog::DBG);
 		fmtlog::startPollingThread(1);
 
-		logi("start catfs");
+		logd("start catfs");
 		cmdline::parser parm;
 		set_cmdline(parm);
 		parm.parse_check(argc, argv);

@@ -58,14 +58,10 @@ namespace catfs
       open_dir_lock.unlock();
 
       if (open_dir == NULL)
-      {
         throw "hno is not valid";
-      }
 
       if (open_dir->dentries.empty())
-      {
         open_dir->dentries = meta->load_sub_dentries(open_dir->ino);
-      }
 
       if (off != 0) off++;
 

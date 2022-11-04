@@ -215,15 +215,14 @@ namespace catfs
       std::vector<Dirent> dirents;
       auto dentry = local_meta->get_dentry(ino);
       if (dentry == NULL)
-      {
         throw types::ERR_ENOENT();
-      }
 
       dirents.push_back(Dirent{name: ".", inode: dentry->inode});
       dirents.push_back(Dirent{name: "..", inode: dentry->inode});
 
       if (!dentry->is_complete() || dentry->is_expired())
       {
+        logi("ino:{} refresh sub dentries is_complete:{}, is_expired:{}", ino, dentry->is_complete(), dentry->is_expired());
         refresh_sub_dentries(*dentry, false);
       }
 
@@ -276,6 +275,7 @@ namespace catfs
           marker: marker,
         };
 
+        logd("listobjects prefix:{} marker:{}", prefix, marker);
         stor::ListObjectsResp resp;
         stor->list_objects(req, resp);
 
@@ -284,9 +284,7 @@ namespace catfs
         delete root_node;
 
         if (!resp.is_trunc)
-        {
           break;
-        }
 
         marker = resp.marker;
         logd("listobjects is trunc, marker:{}", marker);
