@@ -1,17 +1,15 @@
+#include <iostream>
+#include <vector>
+#include <functional>
 #include <string>
-#include <fstream>
-#include <filesystem>
 
 int main()
 {
-  // std::string logdir = "./logs";
-  // std::string mkdirs = "mkdir -p " + logdir;
-  // system(mkdirs.c_str());
+  // auto test = [&test](int x){
+  //   test(2);
+  // };
 
-  // auto logfile = logdir + "/log.txt";
-  // std::ofstream file;
-  // file.open(logfile.c_str(), std::ios_base::app);
-  // file.close();
+  auto add(auto a, auto b) -> decltype(add(1,2)) { return a + b; }
 
-  std::filesystem::create_directory("./log1");
+  test(1);
 }

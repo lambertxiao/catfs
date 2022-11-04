@@ -3,7 +3,10 @@
 
 #include <string>
 #include "meta/meta.h"
+#include "meta/meta_impl.h"
 #include "stor/stor.h"
+#include "types/obj.h"
+#include "types/ftreenode.h"
 
 namespace catfs
 {
@@ -31,11 +34,13 @@ namespace catfs
       virtual Dentry *get_dentry(InodeID ino) = 0;
       virtual Dentry *create_dentry(InodeID pino, std::string name, Inode *inode) = 0;
       virtual Dentry *find_dentry(InodeID pino, std::string name) = 0;
-      virtual Dentry *create_dentry_from_obj(InodeID pino, std::string name, stor::ObjInfo obj, bool isDir) = 0;
+      virtual Dentry *create_dentry_from_obj(InodeID pino, std::string name, types::ObjInfo obj) = 0;
       virtual void remove_dentry(InodeID pino, std::string name) = 0;
 
       virtual void rename(InodeID src_pino, std::string src_name, InodeID dst_pino, std::string dst_name) = 0;
       virtual Inode *create_new_inode(mode_t mode, uint32_t gid, uint32_t uid) = 0;
+      virtual void build_dentries(InodeID pino, types::FTreeNode& root) = 0;
+      virtual void clear_unsync_dentry(Dentry &parent) = 0;
     };
   }
 }

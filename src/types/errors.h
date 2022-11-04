@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdexcept>
 
+#include <types/inode.h>
+
 namespace catfs
 {
   namespace types
@@ -19,6 +21,12 @@ namespace catfs
       {
         this->ino = ino;
       }
+    };
+
+    class ERR_SERVER_ERROR : public std::logic_error
+    {
+    public:
+      ERR_SERVER_ERROR(std::string msg) : logic_error(msg) {}
     };
 
     class ERR_ENOTEMPTY : public std::logic_error

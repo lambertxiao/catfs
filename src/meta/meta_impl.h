@@ -4,10 +4,13 @@
 #include <memory>
 #include <ctime>
 #include <vector>
+#include <unordered_map>
 
 #include "meta/meta.h"
 #include "meta/meta_local.h"
 #include "types/dirent.h"
+#include "types/obj.h"
+#include "types/ftreenode.h"
 #include "stor/stor.h"
 
 namespace catfs
@@ -38,10 +41,10 @@ namespace catfs
       Dentry *get_dentry(InodeID ino) override;
       std::vector<types::Dirent> load_sub_dentries(InodeID ino) override;
 
-      stor::ObjInfo *get_remote_obj(Dentry& parent, const std::string &name);
-      stor::ObjInfo *check_dentry_exist(const std::string &path);
+      void get_remote_obj(Dentry& parent, const std::string &name, types::ObjInfo &obj, bool &exist);
       bool is_remote_dir_exist(const std::string &path);
       void refresh_sub_dentries(Dentry& dentry, bool recursive);
+      types::FTreeNode* format_list_objects_resp(stor::ListObjectsResp& ret);
     };
   }
 }
