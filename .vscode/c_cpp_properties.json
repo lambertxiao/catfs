@@ -3,7 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/root/workspace/awslib/include"
             ],
             "defines": [],
             "compilerPath": "/usr/local/bin/gcc",

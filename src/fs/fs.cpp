@@ -61,7 +61,7 @@ namespace catfs
         throw "hno is not valid";
 
       if (open_dir->dentries.empty())
-        open_dir->dentries = meta->load_sub_dentries(open_dir->ino);
+        meta->load_sub_dentries(open_dir->ino, open_dir->dentries);
 
       if (off != 0) off++;
 

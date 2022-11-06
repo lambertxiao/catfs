@@ -37,7 +37,7 @@ namespace catfs
       virtual Dentry *create_dentry(InodeID pino, const std::string &name, mode_t mode) = 0;
       virtual void remove_dentry(InodeID pino, const std::string &name) = 0;
       virtual Dentry *get_dentry(InodeID ino) = 0;
-      virtual std::vector<Dirent> load_sub_dentries(InodeID ino) = 0;
+      virtual void load_sub_dentries(InodeID ino, std::vector<Dirent> &dirents) = 0;
 
       // virtual types::ErrCode remove_dentry(types::InodeID pino, std::string name) = 0;
       // virtual std::string get_dentry_path(types::InodeID ino) = 0;

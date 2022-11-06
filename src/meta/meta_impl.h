@@ -39,12 +39,12 @@ namespace catfs
       Dentry *create_dentry(InodeID pino, const std::string &name, mode_t mode) override;
       void remove_dentry(InodeID pino, const std::string &name) override;
       Dentry *get_dentry(InodeID ino) override;
-      std::vector<types::Dirent> load_sub_dentries(InodeID ino) override;
+      void load_sub_dentries(InodeID ino, std::vector<types::Dirent> &dirents) override;
 
-      void get_remote_obj(Dentry& parent, const std::string &name, types::ObjInfo &obj, bool &exist);
+      void get_remote_obj(Dentry& parent, const std::string &name, types::ObjInfo &obj, bool &exist, bool &is_dir);
       bool is_remote_dir_exist(const std::string &path);
       void refresh_sub_dentries(Dentry& dentry, bool recursive);
-      types::FTreeNode* format_list_objects_resp(stor::ListObjectsResp& ret);
+      void build_ftree_from_listobjects(stor::ListObjectsResp& ret, types::FTreeNode &root);
     };
   }
 }

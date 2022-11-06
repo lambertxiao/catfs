@@ -1,11 +1,11 @@
 #ifndef CATFS_STOR_S3_H_
 #define CATFS_STOR_S3_H_
 
-// #include "minio-cpp/request.h"
-// #include "minio-cpp/client.h"
+#include "aws/core/Aws.h"
+#include "aws/core/auth/AWSCredentialsProvider.h"
+#include "aws/s3/S3Client.h"
 
 #include "stor/stor.h"
-#include "stor/minio.h"
 
 namespace catfs
 {
@@ -15,22 +15,27 @@ namespace catfs
     {
     private:
       StorOpt opt;
-      minio::s3::BaseUrl base_url;
-      minio::s3::Client* s3_client;
-      minio::creds::StaticProvider *provider;
+      Aws::S3::S3Client* s3_client;
 
     public:
       S3Stor(const StorOpt &opt)
       {
         this->opt = opt;
-        base_url = minio::s3::BaseUrl(opt.endpoint, false);
-        provider = new minio::creds::StaticProvider(opt.public_key, opt.private_key);
-        s3_client = new minio::s3::Client(base_url, provider);
+
+        // 初始化API
+        Aws::SDKOptions options;
+        Aws::InitAPI(options);
+
+        Aws::Client::ClientConfiguration cfg;
+        cfg.endpointOverride = opt.endpoint;
+
+        Aws::Auth::AWSCredentials cred(opt.public_key, opt.private_key);
+        this->s3_client = new Aws::S3::S3Client(cred, cfg);
       }
+
       ~S3Stor()
       {
         delete s3_client;
-        delete provider;
       }
 
       virtual void head_file(HeadFileReq &req, HeadFileResp &resp) override;

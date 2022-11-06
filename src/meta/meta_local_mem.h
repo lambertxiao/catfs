@@ -33,7 +33,7 @@ namespace catfs
 
       void save_dentry_index(Dentry *);
       Dentry *add_child_for_dentry(Dentry *parent, std::string name, Inode *inode);
-      Inode *obj2inode(types::ObjInfo& obj);
+      Inode *obj2inode(types::ObjInfo& obj, bool is_dir);
       InodeID get_next_inode_id();
       void build_dentries(InodeID pino, types::FTreeNode& root);
 
@@ -46,7 +46,7 @@ namespace catfs
       Dentry *get_dentry(InodeID ino) override;
       Dentry *create_dentry(InodeID pino, std::string name, Inode *inode) override;
       Dentry *find_dentry(InodeID pino, std::string name) override;
-      Dentry *create_dentry_from_obj(InodeID pino, std::string name, types::ObjInfo obj) override;
+      Dentry *create_dentry_from_obj(InodeID pino, std::string name, types::ObjInfo obj, bool is_dir) override;
       void remove_dentry(InodeID pino, std::string name) override;
       void rename(InodeID src_pino, std::string src_name, InodeID dst_pino, std::string dst_name) override;
       Inode *create_new_inode(mode_t mode, uint32_t gid, uint32_t uid) override;

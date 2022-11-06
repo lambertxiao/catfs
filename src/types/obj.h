@@ -13,10 +13,10 @@ namespace catfs
       uint64_t size;
       timespec ctime;
       timespec mtime;
-      uint32_t *uid;
-      uint32_t *gid;
-      mode_t *mode;
-      bool is_dir;
+      uint32_t *uid = NULL;
+      uint32_t *gid = NULL;
+      mode_t *mode = NULL;
+      // bool is_dir;
     };
   }
 }

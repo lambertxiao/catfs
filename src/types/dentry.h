@@ -9,6 +9,8 @@
 #include <vector>
 #include <fcntl.h>
 #include "util/time.h"
+#include "types/dirent.h"
+#include "fmtlog/fmtlog.h"
 
 namespace catfs
 {
@@ -21,8 +23,8 @@ namespace catfs
     public:
       std::shared_mutex mutex;
       std::string name;
-      Dentry *parent;
-      Inode *inode;
+      Dentry *parent = NULL;
+      Inode *inode = NULL;
       timespec ttl;
       uint32_t flags;
       bool synced;
@@ -36,6 +38,7 @@ namespace catfs
 
       ~Dentry()
       {
+        logw("析构dentry name:{}", name);
         delete inode;
       }
 
@@ -47,9 +50,7 @@ namespace catfs
       std::string get_full_path()
       {
         if (is_root())
-        {
           return "";
-        }
 
         auto fullpath = this->name;
         auto parent = this->parent;
@@ -66,9 +67,7 @@ namespace catfs
       std::string get_full_path_with_slash()
       {
         if (is_root())
-        {
           return "";
-        }
         return get_full_path() + "/";
       }
 
@@ -155,17 +154,15 @@ namespace catfs
         this->inode->mtime = mtime;
       }
 
-      std::vector<Dentry *> children_list()
+      void children_list(std::vector<types::Dirent> &dirents)
       {
         std::shared_lock lock(mutex);
-        std::vector<Dentry *> list;
 
+        logd("get_child_list {}", this->children.size());
         for (auto &[k, v] : this->children)
         {
-          list.push_back(v);
+          dirents.push_back(Dirent{name: v->name, inode: v->inode});
         }
-
-        return list;
       }
 
       int child_count()

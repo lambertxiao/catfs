@@ -61,7 +61,7 @@ namespace catfs
 
       static void lookup(fuse_req_t req, fuse_ino_t parent, const char *name)
       {
-        logi("fsa-lookup  pino:{} name:{}", parent, name);
+        logi("fsa-lookup pino:{} name:{}", parent, name);
 
         try
         {
@@ -81,11 +81,12 @@ namespace catfs
           fuse_reply_err(req, EIO);
           return;
         }
+        logi("fsa-lookup-done pino:{} name:{}", parent, name);
       }
 
       static void forget(fuse_req_t req, fuse_ino_t ino, uint64_t nlookup)
       {
-        std::cout << "fsa-forget" << std::endl;
+        logi("fsa-forget ino:{}", ino);
       }
 
       static void getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
@@ -279,8 +280,7 @@ namespace catfs
       static void readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
       {
         logi("fsa-readdir ino:{} hno:{} offset:{} limit:{}", ino, fi->fh, off, size);
-        // fuse_reply_err(req, ENOSYS);
-        // return;
+
         try
         {
           auto dirents = catfs->read_dir(fi->fh, off, size);
@@ -295,14 +295,12 @@ namespace catfs
           for (auto &d : dirents)
           {
             if (d.name == "." || d.name == "..")
-            {
               continue;
-            }
+
             struct stat st = {
               .st_ino = d.inode->ino,
               .st_mode = d.inode->mode,
             };
-            logi("dirent ino:{} mode:{}", st.st_ino, st.st_mode);
             size_t entsize = fuse_add_direntry(req, p, rem, d.name.c_str(), &st, off+idx);
             idx++;
             p += entsize;
@@ -335,7 +333,6 @@ namespace catfs
 
           for (auto &d : dirents)
           {
-            logi("dirent name:{} ino:{}", d.name, d.inode->ino);
             struct fuse_entry_param e;
             fill_fuse_entry_param(e, d);
             size_t entsize = fuse_add_direntry_plus(req, p, rem, d.name.c_str(), &e, off+idx);

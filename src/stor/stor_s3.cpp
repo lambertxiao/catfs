@@ -1,10 +1,17 @@
 #include "fmtlog/fmtlog.h"
 
-#include "stor/minio.h"
+#include "aws/core/Aws.h"
+#include "aws/s3/S3Client.h"
+#include "aws/s3/model/HeadObjectRequest.h"
+#include "aws/s3/model/ListObjectsRequest.h"
+#include "aws/core/http/HttpResponse.h"
+
 #include "stor/stor.h"
 #include "stor/stor_s3.h"
 #include "types/errors.h"
 #include "types/obj.h"
+
+using namespace Aws::S3;
 
 namespace catfs
 {
@@ -14,54 +21,70 @@ namespace catfs
     {
       logi("s3stor headfile path:{}", req.obj_key);
 
-      minio::s3::StatObjectArgs args;
-      args.bucket = opt.bucket;
-      args.object = req.obj_key;
-
-      auto statResp = s3_client->StatObject(args);
-      if (!statResp)
+      auto head_req = Model::HeadObjectRequest{};
+      head_req.SetBucket(opt.bucket);
+      head_req.SetKey(req.obj_key);
+      
+      auto head_resp = s3_client->HeadObject(head_req);
+      
+      if (!head_resp.IsSuccess())
       {
-        loge("s3stor headfile error, path:{} code:{} msg:{}", req.obj_key, statResp.status_code, statResp.message);
-        if (statResp.status_code == 404)
+        auto resp_code = head_resp.GetError().GetResponseCode();
+        if (resp_code == Aws::Http::HttpResponseCode::NOT_FOUND)
+        {
+          resp.exist = false;
           return;
+        };
 
-        throw types::ERR_SERVER_ERROR(statResp.message);
+        auto err_msg = head_resp.GetError().GetMessage();
+        loge("s3stor headfile error, path:{} err:{}", req.obj_key, err_msg);
+        throw types::ERR_SERVER_ERROR(err_msg);
       }
 
+      auto ret_obj = head_resp.GetResult();
       types::ObjInfo obj;
-      obj.size = statResp.size;
-      obj.ctime.tv_sec = statResp.last_modified;
-      obj.mtime.tv_sec = statResp.last_modified;
+      obj.size = ret_obj.GetContentLength();
+      obj.ctime.tv_sec = ret_obj.GetLastModified().Seconds();
+      obj.mtime.tv_sec = ret_obj.GetLastModified().Seconds();
       resp.exist = true;
       resp.obj = obj;
     }
 
     void S3Stor::list_objects(ListObjectsReq &req, ListObjectsResp &resp)
     {
-      minio::s3::ListObjectsArgs args;
-      args.bucket = opt.bucket;
-      args.delimiter = "/";
-      args.marker = req.marker;
-      args.max_keys = req.max;
+      auto list_req = Model::ListObjectsRequest{};
+      list_req.SetBucket(opt.bucket);
+      list_req.SetDelimiter("/");
+      list_req.SetMarker(req.marker);
+      list_req.SetMaxKeys(req.max);
 
-      auto ret = s3_client->ListObjects(args);
+      auto ret = s3_client->ListObjects(list_req);
 
-      //
-      //
-      logi("s3stor list_objects ret");
+      if (!ret.IsSuccess())
+      {
+        auto err_msg = ret.GetError().GetMessage();
+        loge("s3stor listobjects error, path:{} err:{}", req.prefix, err_msg);
+        throw types::ERR_SERVER_ERROR(err_msg);
+      }
 
-      for (; ret; ret++) {
-        minio::s3::Item item = *ret;
-        if (item) {
-          types::ObjInfo obj;
-          obj.name = item.name;
-          obj.size = item.size;
-          obj.is_dir = item.is_prefix;
-          resp.objs.push_back(obj);
-        } else {
-          loge("s3stor list_objects error, prefix:{} err:{}", req.prefix, item.Error().String());
-          throw types::ERR_SERVER_ERROR(item.Error().String());
-        }
+      auto result = ret.GetResult();
+      resp.is_trunc = result.GetIsTruncated();
+      resp.next_marker = result.GetNextMarker();
+
+      for (auto &prefix : result.GetCommonPrefixes())
+      {
+        resp.common_prefixes.push_back(prefix.GetPrefix());
+      }
+
+      for (auto &item : result.GetContents())
+      {
+        types::ObjInfo obj;
+        obj.size = item.GetSize();
+        obj.mtime.tv_sec = item.GetLastModified().Seconds();
+        obj.ctime.tv_sec = item.GetLastModified().Seconds();
+        obj.name = item.GetKey();
+
+        resp.objs.push_back(obj);
       }
     }
 

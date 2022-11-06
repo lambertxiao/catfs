@@ -1,4 +1,5 @@
 #include <map>
+#include "fmtlog/fmtlog.h"
 #include "meta/meta.h"
 #include "meta/meta_impl.h"
 #include "types/inode.h"
@@ -18,7 +19,7 @@ namespace catfs
       return local_meta.get()->get_inode(ino);
     };
 
-    void MetaImpl::get_remote_obj(Dentry &parent, const std::string &name, types::ObjInfo &obj, bool &exist)
+    void MetaImpl::get_remote_obj(Dentry &parent, const std::string &name, types::ObjInfo &obj, bool &exist, bool &is_dir)
     {
       // 1. 检查是否有同名的文件
       // 2. 检查是否有同名的目录
@@ -31,6 +32,7 @@ namespace catfs
       {
         auto req = stor::HeadFileReq{obj_key : fullpath + "/"};
         stor->head_file(req, resp);
+        is_dir = true;
       }
 
       exist = resp.exist;
@@ -53,11 +55,12 @@ namespace catfs
 
         types::ObjInfo obj;
         bool obj_exist;
-        get_remote_obj(*parent, name, obj, obj_exist);
+        bool is_dir;
+        get_remote_obj(*parent, name, obj, obj_exist, is_dir);
 
         if (obj_exist)
         {
-          dentry = local_meta->create_dentry_from_obj(pino, name, obj);
+          dentry = local_meta->create_dentry_from_obj(pino, name, obj, is_dir);
           dentry->inc_ttl(opt.dcache_timeout);
           return dentry;
         }
@@ -210,9 +213,8 @@ namespace catfs
       return local_meta->get_dentry(ino);
     }
 
-    std::vector<Dirent> MetaImpl::load_sub_dentries(InodeID ino)
+    void MetaImpl::load_sub_dentries(InodeID ino, std::vector<Dirent> &dirents)
     {
-      std::vector<Dirent> dirents;
       auto dentry = local_meta->get_dentry(ino);
       if (dentry == NULL)
         throw types::ERR_ENOENT();
@@ -226,22 +228,15 @@ namespace catfs
         refresh_sub_dentries(*dentry, false);
       }
 
-      for (auto &d: dentry->children_list())
-      {
-        dirents.push_back(Dirent{name: d->name, inode: d->inode});
-      }
-
-      return dirents;
+      dentry->children_list(dirents);
     }
 
-    types::FTreeNode* MetaImpl::format_list_objects_resp(stor::ListObjectsResp& resp)
+    void MetaImpl::build_ftree_from_listobjects(stor::ListObjectsResp& resp, types::FTreeNode &root)
     {
       std::string req_prefix;
-      auto root = new types::FTreeNode{is_dir: true};
-      auto curr_node = root;
 
-      // todo 目前只处理下一级别目录，需要支持delimiter为""的情况
-      for (auto prefix: resp.common_prefixes)
+      // todo 目前只处理下一级别目录，后续需要支持delimiter为""的情况
+      for (auto &prefix: resp.common_prefixes)
       {
         auto dirname = prefix.substr(req_prefix.size(), prefix.size()-1);
         if (dirname == "")
@@ -250,16 +245,16 @@ namespace catfs
         }
 
         auto dir_node = types::FTreeNode{name: dirname, is_dir: true};
-        curr_node->children[dirname] = dir_node;
+        logd("add dir {}", dirname);
+        root.children[dirname] = dir_node;
       }
 
-      for (auto obj: resp.objs)
+      for (auto &obj: resp.objs)
       {
         auto file_node = types::FTreeNode{name: obj.name, oinfo: obj};
-    		curr_node->children[obj.name] = file_node;
+        logd("add file {}", obj.name);
+    		root.children[obj.name] = file_node;
       }
-
-      return curr_node;
     };
 
     void MetaImpl::refresh_sub_dentries(Dentry& dentry, bool recursive)
@@ -279,18 +274,18 @@ namespace catfs
         stor::ListObjectsResp resp;
         stor->list_objects(req, resp);
 
-        auto root_node = format_list_objects_resp(resp);
-        local_meta->build_dentries(dentry.inode->ino, *root_node);
-        delete root_node;
+        auto root = types::FTreeNode{is_dir: true};
+        build_ftree_from_listobjects(resp, root);
+        local_meta->build_dentries(dentry.inode->ino, root);
 
         if (!resp.is_trunc)
           break;
 
-        marker = resp.marker;
+        marker = resp.next_marker;
         logd("listobjects is trunc, marker:{}", marker);
       }
 
-      local_meta->clear_unsync_dentry(dentry);
+      // local_meta->clear_unsync_dentry(dentry);
     }
   }
 }

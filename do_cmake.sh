@@ -7,4 +7,7 @@ fi
   
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=ON "$@" ..
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_PREFIX_PATH=~/workspace/awslib/ \
+    "$@" ..

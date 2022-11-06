@@ -36,7 +36,7 @@ namespace catfs
     struct ListObjectsResp
     {
       bool is_trunc;
-	    string marker;
+	    string next_marker;
       std::vector<types::ObjInfo> objs;
       std::vector<string> common_prefixes;
     };

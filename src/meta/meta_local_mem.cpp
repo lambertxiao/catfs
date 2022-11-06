@@ -6,6 +6,7 @@
 #include "fmtlog/fmtlog.h"
 #include "meta/meta_local_mem.h"
 #include "types/inode.h"
+#include "util/time.h"
 
 #define rlock_dentry_idx \
   std::shared_lock lock(m_locks[ino % LOCK_COUNT]);
@@ -35,14 +36,6 @@ namespace catfs
 
       this->root_dentry = new types::Dentry("", inode);
       this->save_dentry_index(this->root_dentry);
-
-      auto f1 = new types::Inode();
-      f1->ino = this->get_next_inode_id();
-      f1->mode = S_IFREG | 0755;
-      f1->uid = opt.uid;
-      f1->gid = opt.uid;
-      auto d1 = this->root_dentry->add_child("f1", f1);
-      this->save_dentry_index(d1);
     }
 
     void LocalMemMeta::save_dentry_index(types::Dentry *d)
@@ -50,14 +43,14 @@ namespace catfs
       auto ino = d->inode->ino;
       wlock_dentry_idx
 
-          dentry_index[ino % LOCK_COUNT][ino] = d;
+      dentry_index[ino % LOCK_COUNT][ino] = d;
     }
 
     types::Inode *LocalMemMeta::get_inode(types::InodeID ino)
     {
       rlock_dentry_idx
 
-          auto dentry = dentry_index[ino % LOCK_COUNT][ino];
+      auto dentry = dentry_index[ino % LOCK_COUNT][ino];
 
       if (dentry == NULL)
       {
@@ -137,7 +130,7 @@ namespace catfs
       return parent->get_child(name);
     }
 
-    Dentry *LocalMemMeta::create_dentry_from_obj(InodeID pino, std::string name, types::ObjInfo obj)
+    Dentry *LocalMemMeta::create_dentry_from_obj(InodeID pino, std::string name, types::ObjInfo obj, bool is_dir)
     {
       auto parent = get_dentry(pino);
       if (parent == NULL)
@@ -145,44 +138,36 @@ namespace catfs
         throw types::InvalidInodeID(pino);
       }
 
-      auto inode = obj2inode(obj);
+      auto inode = obj2inode(obj, is_dir);
       return add_child_for_dentry(parent, name, inode);
     }
 
-    Inode *LocalMemMeta::obj2inode(types::ObjInfo &obj)
+    Inode *LocalMemMeta::obj2inode(types::ObjInfo &obj, bool is_dir)
     {
       auto inode = new Inode();
       inode->ino = get_next_inode_id();
       inode->size = obj.size;
-      inode->mtime = obj.mtime;
-      inode->ctime = obj.ctime;
+
+      if (is_dir)
+      {
+        inode->mtime = util::now();
+        inode->ctime = util::now();
+      }
 
       if (obj.uid != NULL)
-      {
         inode->uid = *obj.uid;
-      }
       else
-      {
         inode->uid = opt.uid;
-      }
 
       if (obj.gid != NULL)
-      {
         inode->gid = *obj.gid;
-      }
       else
-      {
         inode->gid = opt.gid;
-      }
 
-      if (obj.is_dir)
-      {
-        inode->mode = S_IFDIR | 0755;
-      }
+      if (is_dir)
+        inode->mode = S_IFDIR | 0766;
       else
-      {
-        inode->mode = 0644;
-      }
+        inode->mode = S_IFREG | 0644;
 
       if (obj.mode != NULL)
       {
@@ -251,17 +236,17 @@ namespace catfs
 
     void LocalMemMeta::build_dentries(InodeID pino, types::FTreeNode &root)
     {
-      std::function<void(Dentry * parent, std::unordered_map<string, types::FTreeNode> children)> build;
+      std::function<void(Dentry * parent, std::unordered_map<string, types::FTreeNode> &children)> build;
 
-      build = [this, &build](Dentry *parent, std::unordered_map<string, types::FTreeNode> children)
+      build = [this, &build](Dentry *parent, std::unordered_map<string, types::FTreeNode> &children)
       {
         parent->synced = true;
-        for (auto [_, child] : children)
+        for (auto &[_, child] : children)
         {
           auto child_dentry = parent->get_child(child.name);
 
           if (child_dentry == NULL)
-            child_dentry = create_dentry_from_obj(parent->inode->ino, child.name, child.oinfo);
+            child_dentry = create_dentry_from_obj(parent->inode->ino, child.name, child.oinfo, child.is_dir);
           else
             child_dentry->update(child.oinfo.size, child.oinfo.ctime, child.oinfo.mtime);
 
@@ -294,7 +279,7 @@ namespace catfs
           d->complete();
         }
 
-        for (auto [_, dentry]: d->children)
+        for (auto &[_, dentry]: d->children)
         {
           auto dname = dentry->name;
           if (!dentry->synced)

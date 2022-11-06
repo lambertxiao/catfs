@@ -34,7 +34,7 @@ namespace catfs
       virtual Dentry *get_dentry(InodeID ino) = 0;
       virtual Dentry *create_dentry(InodeID pino, std::string name, Inode *inode) = 0;
       virtual Dentry *find_dentry(InodeID pino, std::string name) = 0;
-      virtual Dentry *create_dentry_from_obj(InodeID pino, std::string name, types::ObjInfo obj) = 0;
+      virtual Dentry *create_dentry_from_obj(InodeID pino, std::string name, types::ObjInfo obj, bool is_dir) = 0;
       virtual void remove_dentry(InodeID pino, std::string name) = 0;
 
       virtual void rename(InodeID src_pino, std::string src_name, InodeID dst_pino, std::string dst_name) = 0;

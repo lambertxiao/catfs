@@ -2,8 +2,12 @@ project(catfs)
 
 set(CODE_ROOT "${PROJECT_SOURCE_DIR}/src")
 include_directories(${CODE_ROOT})
+
 include_directories("${PROJECT_SOURCE_DIR}/deps/include")
 link_directories("${PROJECT_SOURCE_DIR}/deps/lib")
+
+include_directories("/root/workspace/awslib/include")
+link_directories("/root/workspace/awslib/lib")
 
 aux_source_directory("${CODE_ROOT}/fs" FS)
 aux_source_directory("${CODE_ROOT}/meta" META)
@@ -23,12 +27,16 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -ggdb -O3")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
+find_package(AWSSDK REQUIRED COMPONENTS s3)
+
+# Message(${AWSSDK})
 
 add_executable(catfs ${CODE_ROOT}/main.cpp ${SRC_DIR})
 
 # 链接静态库
 target_link_libraries(
     catfs dl
-    libfuse3.a libfmt.a libfmtlog-static.a libyaml-cpp.a libminiocpp.a libpugixml.a
-    libcurlpp.a libcurl.a libssl.a libcrypto.a libz.a libinih.a
+    libfuse3.a libfmt.a libfmtlog-static.a libyaml-cpp.a libpugixml.a
+    # libcurlpp.a libcurl.a libssl.a libcrypto.a libz.a libinih.a
+    ${AWSSDK_LINK_LIBRARIES}
 )
