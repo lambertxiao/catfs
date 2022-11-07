@@ -44,7 +44,7 @@ namespace catfs
       void get_remote_obj(Dentry& parent, const std::string &name, types::ObjInfo &obj, bool &exist, bool &is_dir);
       bool is_remote_dir_exist(const std::string &path);
       void refresh_sub_dentries(Dentry& dentry, bool recursive);
-      void build_ftree_from_listobjects(stor::ListObjectsResp& ret, types::FTreeNode &root);
+      void build_ftree_from_listobjects(std::string &rep_prefix, stor::ListObjectsResp& ret, types::FTreeNode &root);
     };
   }
 }

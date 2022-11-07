@@ -24,9 +24,9 @@ namespace catfs
       auto head_req = Model::HeadObjectRequest{};
       head_req.SetBucket(opt.bucket);
       head_req.SetKey(req.obj_key);
-      
+
       auto head_resp = s3_client->HeadObject(head_req);
-      
+
       if (!head_resp.IsSuccess())
       {
         auto resp_code = head_resp.GetError().GetResponseCode();
@@ -57,6 +57,7 @@ namespace catfs
       list_req.SetDelimiter("/");
       list_req.SetMarker(req.marker);
       list_req.SetMaxKeys(req.max);
+      list_req.SetPrefix(req.prefix);
 
       auto ret = s3_client->ListObjects(list_req);
 

@@ -5,7 +5,7 @@
 #include <time.h>
 #include <mutex>
 #include <shared_mutex>
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <fcntl.h>
 #include "util/time.h"
@@ -28,7 +28,7 @@ namespace catfs
       timespec ttl;
       uint32_t flags;
       bool synced;
-      std::map<std::string, Dentry *> children;
+      std::unordered_map<std::string, Dentry *> children;
 
       Dentry(std::string name, Inode *inode)
       {
@@ -75,7 +75,11 @@ namespace catfs
       {
         std::shared_lock lock(mutex);
 
-        return children[name];
+        if (children.count(name) > 0)
+        {
+          return children[name];
+        }
+        return NULL;
       }
 
       Dentry *add_child(std::string name, Inode *inode)
@@ -93,11 +97,13 @@ namespace catfs
       {
         std::unique_lock lock(mutex);
 
-        auto target = children[name];
-        free(target->inode);
-        free(target);
-
-        children.erase(name);
+        if (children.count(name) > 0)
+        {
+          auto target = children[name];
+          free(target->inode);
+          free(target);
+          children.erase(name);
+        }
       }
 
       bool is_expired()
@@ -158,10 +164,9 @@ namespace catfs
       {
         std::shared_lock lock(mutex);
 
-        logd("get_child_list {}", this->children.size());
         for (auto &[k, v] : this->children)
         {
-          dirents.push_back(Dirent{name: v->name, inode: v->inode});
+          dirents.push_back({name: v->name, inode: v->inode});
         }
       }
 

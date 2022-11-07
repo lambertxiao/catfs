@@ -207,9 +207,7 @@ namespace catfs
 
       auto src_dentry = src_parent->get_child(src_name);
       if (src_dentry == NULL)
-      {
         return;
-      }
 
       src_parent->remove_child(src_name);
       add_child_for_dentry(dst_parent, dst_name, src_dentry->inode);

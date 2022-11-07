@@ -49,9 +49,7 @@ namespace catfs
 
         auto parent = local_meta->get_dentry(pino);
         if (parent == NULL)
-        {
           throw types::InvalidInodeID(pino);
-        }
 
         types::ObjInfo obj;
         bool obj_exist;
@@ -70,6 +68,7 @@ namespace catfs
         auto exist = is_remote_dir_exist(prefix);
         if (!exist)
         {
+          logd("prefix also not a dir");
           return NULL;
         }
 
@@ -81,19 +80,13 @@ namespace catfs
       else
       {
         if (!dentry->is_expired())
-        {
           return dentry;
-        }
 
         std::string path;
         if (dentry->is_dir())
-        {
           path = dentry->get_full_path_with_slash();
-        }
         else
-        {
           path = dentry->get_full_path();
-        }
 
         auto req = stor::HeadFileReq{obj_key : path};
         stor::HeadFileResp resp;
@@ -231,28 +224,23 @@ namespace catfs
       dentry->children_list(dirents);
     }
 
-    void MetaImpl::build_ftree_from_listobjects(stor::ListObjectsResp& resp, types::FTreeNode &root)
+    void MetaImpl::build_ftree_from_listobjects(std::string &req_prefix, stor::ListObjectsResp& resp, types::FTreeNode &root)
     {
-      std::string req_prefix;
-
       // todo 目前只处理下一级别目录，后续需要支持delimiter为""的情况
       for (auto &prefix: resp.common_prefixes)
       {
-        auto dirname = prefix.substr(req_prefix.size(), prefix.size()-1);
+        logd("req_prefix:{} prefix:{}", req_prefix, prefix);
+        auto dirname = prefix.substr(req_prefix.size(), prefix.size() - req_prefix.size() - 1);
         if (dirname == "")
-        {
           continue;
-        }
 
         auto dir_node = types::FTreeNode{name: dirname, is_dir: true};
-        logd("add dir {}", dirname);
         root.children[dirname] = dir_node;
       }
 
       for (auto &obj: resp.objs)
       {
         auto file_node = types::FTreeNode{name: obj.name, oinfo: obj};
-        logd("add file {}", obj.name);
     		root.children[obj.name] = file_node;
       }
     };
@@ -275,7 +263,7 @@ namespace catfs
         stor->list_objects(req, resp);
 
         auto root = types::FTreeNode{is_dir: true};
-        build_ftree_from_listobjects(resp, root);
+        build_ftree_from_listobjects(prefix, resp, root);
         local_meta->build_dentries(dentry.inode->ino, root);
 
         if (!resp.is_trunc)
