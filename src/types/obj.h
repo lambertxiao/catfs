@@ -16,7 +16,6 @@ namespace catfs
       uint32_t *uid = NULL;
       uint32_t *gid = NULL;
       mode_t *mode = NULL;
-      // bool is_dir;
     };
   }
 }

@@ -9,9 +9,11 @@
 
 #include "fs/fuse.h"
 #include "fs/open_dir.h"
+#include "fs/open_file.h"
 #include "meta/meta.h"
 #include "types/inode.h"
 #include "types/dirent.h"
+#include "types/handle.h"
 
 namespace catfs {
   namespace fs {
@@ -21,17 +23,17 @@ namespace catfs {
     using catfs::types::Dirent;
     using catfs::meta::Meta;
     
-    using HandleID = uint64_t;
-
     struct CatFsOpt {};
 
     class CatFS {
     private:
       std::shared_ptr<Meta> meta;
-      HandleID next_handle_id;
+      types::HandleID next_handle_id;
       std::mutex next_handle_id_lock;
       std::shared_mutex open_dir_lock;
-      std::unordered_map<HandleID, OpenDir*> open_dirs;
+      std::shared_mutex open_file_lock;
+      std::unordered_map<types::HandleID, OpenDir*> open_dirs;
+      std::unordered_map<types::HandleID, OpenFile*> open_files;
     
     public:
       CatFS(std::shared_ptr<Meta> meta) {
@@ -45,11 +47,13 @@ namespace catfs {
       const Dentry* create_dentry(InodeID parent, std::string name, mode_t mode);
       void remove_dentry(InodeID parent, std::string name);
 
-      HandleID opendir(InodeID ino);
-      std::vector<Dirent> read_dir(HandleID hno, off_t off, size_t size);
-      void release_dir(InodeID ino, HandleID hno);
+      types::HandleID opendir(InodeID ino);
+      types::HandleID openfile(InodeID ino);
 
-      HandleID get_next_handle_id();
+      std::vector<Dirent> read_dir(types::HandleID hno, off_t off, size_t size);
+      void release_dir(InodeID ino, types::HandleID hno);
+
+      types::HandleID get_next_handle_id();
     };
   }
 }

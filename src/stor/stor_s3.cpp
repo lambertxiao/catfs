@@ -97,6 +97,11 @@ namespace catfs
       put_req.SetBucket(opt.bucket);
       put_req.SetKey(req.obj_key);
 
+      // auto inputData = Aws::MakeShared<Aws::FStream>(
+      //   "SampleAllocationTag", "", std::ios_base::in | std::ios_base::binary);
+      // auto inputData = Aws::MakeShared<Aws::IOStream>(req.buf);
+      // put_req.SetBody(inputData);
+
       return NULL;
     }
     DeleteFileResp *S3Stor::delete_file(DeleteFileReq &req)

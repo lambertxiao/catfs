@@ -4,21 +4,20 @@
 #include <vector>
 #include "types/inode.h"
 #include "types/dirent.h"
+#include "types/handle.h"
 
 namespace catfs
 {
   namespace fs
   {
-    using HandleID = uint64_t;
-
     class OpenDir
     {
     public:
       types::InodeID ino;
-      HandleID hno;
+      types::HandleID hno;
       std::vector<types::Dirent> dentries;
 
-      OpenDir(types::InodeID ino, HandleID hno)
+      OpenDir(types::InodeID ino, types::HandleID hno)
       {
         this->ino = ino;
         this->hno = hno;

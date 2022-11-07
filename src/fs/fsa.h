@@ -160,7 +160,7 @@ namespace catfs
         }
         catch (std::exception &e)
         {
-          loge("lookup_inode error, pino:{} name:{} err:{}", parent, name, e.what());
+          loge("fsa-mkdir error, pino:{} name:{} err:{}", parent, name, e.what());
           fuse_reply_err(req, EIO);
           return;
         }
@@ -225,24 +225,70 @@ namespace catfs
       }
       static void open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
       {
-        std::cout << "fsa-open" << std::endl;
+        logi("fsa-open ino:{}", ino);
+
+        try
+        {
+          auto hno = catfs->openfile(ino);
+          fi->fh = hno;
+          fuse_reply_open(req, fi);
+          logi("fsa-open-done ino:{} hno:{}", ino, hno);
+        }
+        catch (types::ERR_ENOENT &e)
+        {
+          loge("openfile error, ino:{} err:{}", ino, e.what());
+          fuse_reply_err(req, ENOENT);
+        }
+        catch (std::exception &e)
+        {
+          loge("openfile error, ino:{} err:{}", ino, e.what());
+          fuse_reply_err(req, EIO);
+        }
       }
+
+      static void create(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t mode, struct fuse_file_info *fi)
+      {
+        logi("fsa-create pino:{} name:{} mode:{}", parent, name, mode);
+        try
+        {
+          auto dentry = catfs->create_dentry(parent, name, mode);
+          if (dentry == NULL)
+          {
+            fuse_reply_err(req, EIO);
+            return;
+          }
+
+          reply_dentry(req, dentry);
+          return;
+        }
+        catch (std::exception &e)
+        {
+          loge("fsa-create error, pino:{} name:{} err:{}", parent, name, e.what());
+          fuse_reply_err(req, EIO);
+          return;
+        }
+      }
+
       static void read(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
       {
-        std::cout << "fsa-read" << std::endl;
+        logi("fsa-read ino:{} off:{} size:{}", ino, off, size);
       }
+
       static void write(fuse_req_t req, fuse_ino_t ino, const char *buf, size_t size, off_t off, struct fuse_file_info *fi)
       {
-        std::cout << "fsa-write" << std::endl;
+        logi("fsa-write ino:{} off:{} size:{}", ino, off, size);
       }
+
       static void flush(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
       {
-        std::cout << "fsa-flush" << std::endl;
+        logi("fsa-flush ino:{}", ino);
       }
+
       static void release(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
       {
-        std::cout << "fsa-release" << std::endl;
+        logi("fsa-release ino:{}", ino);
       }
+
       static void fsync(fuse_req_t req, fuse_ino_t ino, int datasync, struct fuse_file_info *fi)
       {
         std::cout << "fsa-fsync" << std::endl;
@@ -271,12 +317,6 @@ namespace catfs
         }
       }
 
-      struct dirbuf
-      {
-        char *p;
-        size_t size;
-      };
-
       static void readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
       {
         logi("fsa-readdir ino:{} hno:{} offset:{} limit:{}", ino, fi->fh, off, size);
@@ -285,11 +325,11 @@ namespace catfs
         {
           auto dirents = catfs->read_dir(fi->fh, off, size);
           char *p;
-        	char *buf;
+          char *buf;
 
-	        size_t rem = size;
+          size_t rem = size;
           int idx = 0;
-          buf = (char* )calloc(1, size);
+          buf = (char *)calloc(1, size);
           p = buf;
 
           for (auto &d : dirents)
@@ -298,21 +338,21 @@ namespace catfs
               continue;
 
             struct stat st = {
-              .st_ino = d.inode->ino,
-              .st_mode = d.inode->mode,
+                .st_ino = d.inode->ino,
+                .st_mode = d.inode->mode,
             };
-            size_t entsize = fuse_add_direntry(req, p, rem, d.name.c_str(), &st, off+idx);
+            size_t entsize = fuse_add_direntry(req, p, rem, d.name.c_str(), &st, off + idx);
             idx++;
             p += entsize;
-		        rem -= entsize;
+            rem -= entsize;
           }
-    	    fuse_reply_buf(req, buf, size - rem);
+          fuse_reply_buf(req, buf, size - rem);
           free(buf);
         }
         catch (std::exception &e)
         {
           loge("readdir error, ino:{} offset:{} limit:{} err:{}", ino, off, size, e.what());
-    	    fuse_reply_err(req, EIO);
+          fuse_reply_err(req, EIO);
         }
         logi("fsa-readdir-done ino:{} hno:{}", ino, fi->fh);
       }
@@ -325,30 +365,30 @@ namespace catfs
           auto dirents = catfs->read_dir(fi->fh, off, size);
 
           char *p;
-        	char *buf;
-	        size_t rem = size;
+          char *buf;
+          size_t rem = size;
           int idx = 0;
-          buf = (char* )calloc(1, size);
+          buf = (char *)calloc(1, size);
           p = buf;
 
           for (auto &d : dirents)
           {
             struct fuse_entry_param e;
             fill_fuse_entry_param(e, d);
-            size_t entsize = fuse_add_direntry_plus(req, p, rem, d.name.c_str(), &e, off+idx);
+            size_t entsize = fuse_add_direntry_plus(req, p, rem, d.name.c_str(), &e, off + idx);
             idx++;
 
             p += entsize;
-		        rem -= entsize;
+            rem -= entsize;
           }
 
-    	    fuse_reply_buf(req, buf, size - rem);
+          fuse_reply_buf(req, buf, size - rem);
           free(buf);
         }
         catch (std::exception &e)
         {
           loge("readdirplus error, ino:{} offset:{} limit:{} err:{}", ino, off, size, e.what());
-    	    fuse_reply_err(req, EIO);
+          fuse_reply_err(req, EIO);
         }
 
         logi("fsa-readdirplus-done ino:{} hno:{}", ino, fi->fh);
@@ -401,10 +441,7 @@ namespace catfs
         logi("fsa-access ino:{} mask:{}", ino, mask);
         fuse_reply_err(req, ENOSYS);
       }
-      static void create(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t mode, struct fuse_file_info *fi)
-      {
-        std::cout << "fsa-create" << std::endl;
-      }
+ 
       static void getlk(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi, struct flock *lock)
       {
         std::cout << "fsa-getlk" << std::endl;
