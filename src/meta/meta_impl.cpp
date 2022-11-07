@@ -67,10 +67,7 @@ namespace catfs
         auto prefix = parent->get_full_path_with_slash() + name;
         auto exist = is_remote_dir_exist(prefix);
         if (!exist)
-        {
-          logd("prefix also not a dir");
           return NULL;
-        }
 
         // add virtual dir in local
         dentry = parent->add_child(name, local_meta->create_new_inode(parent->inode->mode, parent->inode->gid, parent->inode->uid));
@@ -229,7 +226,6 @@ namespace catfs
       // todo 目前只处理下一级别目录，后续需要支持delimiter为""的情况
       for (auto &prefix: resp.common_prefixes)
       {
-        logd("req_prefix:{} prefix:{}", req_prefix, prefix);
         auto dirname = prefix.substr(req_prefix.size(), prefix.size() - req_prefix.size() - 1);
         if (dirname == "")
           continue;
@@ -273,7 +269,7 @@ namespace catfs
         logd("listobjects is trunc, marker:{}", marker);
       }
 
-      // local_meta->clear_unsync_dentry(dentry);
+      local_meta->clear_unsync_dentry(dentry);
     }
   }
 }
