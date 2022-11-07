@@ -4,6 +4,8 @@
 #include "aws/s3/S3Client.h"
 #include "aws/s3/model/HeadObjectRequest.h"
 #include "aws/s3/model/ListObjectsRequest.h"
+#include "aws/s3/model/PutObjectRequest.h"
+#include "aws/s3/model/DeleteObjectRequest.h"
 #include "aws/core/http/HttpResponse.h"
 
 #include "stor/stor.h"
@@ -91,10 +93,19 @@ namespace catfs
 
     PutFileResp *S3Stor::put_file(PutFileReq &req)
     {
+      auto put_req = Model::PutObjectRequest{};
+      put_req.SetBucket(opt.bucket);
+      put_req.SetKey(req.obj_key);
+
       return NULL;
     }
     DeleteFileResp *S3Stor::delete_file(DeleteFileReq &req)
     {
+      auto delete_req = Model::DeleteObjectRequest();
+      delete_req.SetBucket(opt.bucket);
+      delete_req.SetKey(req.obj_key);
+      auto delete_resp = s3_client->DeleteObject(delete_req);
+
       return NULL;
     }
   }
