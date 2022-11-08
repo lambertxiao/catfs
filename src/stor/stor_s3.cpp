@@ -91,27 +91,38 @@ namespace catfs
       }
     }
 
-    PutFileResp *S3Stor::put_file(PutFileReq &req)
+    void S3Stor::put_file(PutFileReq &req, PutFileResp &resp)
     {
       auto put_req = Model::PutObjectRequest{};
       put_req.SetBucket(opt.bucket);
       put_req.SetKey(req.obj_key);
 
-      // auto inputData = Aws::MakeShared<Aws::FStream>(
-      //   "SampleAllocationTag", "", std::ios_base::in | std::ios_base::binary);
-      // auto inputData = Aws::MakeShared<Aws::IOStream>(req.buf);
-      // put_req.SetBody(inputData);
+      auto inputData = Aws::MakeShared<Aws::StringStream>("");
+      // inputData->write("sdsdsd", 6);
+      put_req.SetBody(inputData);
 
-      return NULL;
+      auto outcome = s3_client->PutObject(put_req);
+      if (!outcome.IsSuccess())
+      {
+        auto err_msg = outcome.GetError().GetMessage();
+        loge("s3stor putobject error:{}", err_msg);
+        throw types::ERR_SERVER_ERROR(err_msg);
+      }
     }
-    DeleteFileResp *S3Stor::delete_file(DeleteFileReq &req)
+
+    void S3Stor::delete_file(DeleteFileReq &req, DeleteFileResp &resp)
     {
       auto delete_req = Model::DeleteObjectRequest();
       delete_req.SetBucket(opt.bucket);
       delete_req.SetKey(req.obj_key);
       auto delete_resp = s3_client->DeleteObject(delete_req);
 
-      return NULL;
+      if (!delete_resp.IsSuccess())
+      {
+        auto err_msg = delete_resp.GetError().GetMessage();
+        loge("s3stor delete_file error:{}", err_msg);
+        throw types::ERR_SERVER_ERROR(err_msg);
+      }
     }
   }
 }

@@ -22,7 +22,7 @@ namespace catfs {
     using catfs::types::Dentry;
     using catfs::types::Dirent;
     using catfs::meta::Meta;
-    
+
     struct CatFsOpt {};
 
     class CatFS {
@@ -34,14 +34,14 @@ namespace catfs {
       std::shared_mutex open_file_lock;
       std::unordered_map<types::HandleID, OpenDir*> open_dirs;
       std::unordered_map<types::HandleID, OpenFile*> open_files;
-    
+
     public:
       CatFS(std::shared_ptr<Meta> meta) {
         this->meta = meta;
       }
 
       ~CatFS() {}
-      
+
       const Inode* lookup_inode(InodeID ino);
       const Dentry* find_dentry(InodeID pino, std::string name);
       const Dentry* create_dentry(InodeID parent, std::string name, mode_t mode);

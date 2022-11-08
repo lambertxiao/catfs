@@ -162,8 +162,8 @@ namespace catfs
         obj_key : obj_key,
         meta_data : meta_data,
       };
-
-      stor->put_file(req);
+      auto resp = stor::PutFileResp{};
+      stor->put_file(req, resp);
       auto inode = local_meta->create_new_inode(mode, parent->inode->gid, parent->inode->uid);
       dentry = local_meta->create_dentry(pino, name, inode);
 
@@ -182,7 +182,8 @@ namespace catfs
       if (!dentry->is_dir())
       {
         auto req = stor::DeleteFileReq{obj_key : fullpath};
-        stor->delete_file(req);
+        auto resp = stor::DeleteFileResp{};
+        stor->delete_file(req, resp);
       }
       else
       {
@@ -192,7 +193,8 @@ namespace catfs
         }
 
         auto req = stor::DeleteFileReq{obj_key : fullpath + "/"};
-        stor->delete_file(req);
+        auto resp = stor::DeleteFileResp{};
+        stor->delete_file(req, resp);
       }
 
       local_meta->remove_dentry(pino, name);

@@ -148,6 +148,7 @@ namespace catfs
         logi("fsa-mkdir pino:{} name:{} mode:{}", parent, name, mode);
         try
         {
+          mode = mode | S_IFDIR;
           auto dentry = catfs->create_dentry(parent, name, mode);
           if (dentry == NULL)
           {
@@ -441,7 +442,7 @@ namespace catfs
         logi("fsa-access ino:{} mask:{}", ino, mask);
         fuse_reply_err(req, ENOSYS);
       }
- 
+
       static void getlk(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi, struct flock *lock)
       {
         std::cout << "fsa-getlk" << std::endl;

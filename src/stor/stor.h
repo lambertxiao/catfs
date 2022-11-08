@@ -44,7 +44,7 @@ namespace catfs
     struct PutFileReq
     {
       string obj_key;
-      std::ifstream buf;
+      // std::iostream buf;
       std::map<string, string> meta_data;
     };
 
@@ -76,8 +76,8 @@ namespace catfs
     public:
       virtual void head_file(HeadFileReq &req, HeadFileResp &resp) = 0;
       virtual void list_objects(ListObjectsReq &req, ListObjectsResp &resp) = 0;
-      virtual PutFileResp *put_file(PutFileReq &req) = 0;
-      virtual DeleteFileResp *delete_file(DeleteFileReq &req) = 0;
+      virtual void put_file(PutFileReq &req, PutFileResp &resp) = 0;
+      virtual void delete_file(DeleteFileReq &req, DeleteFileResp &resp) = 0;
     };
   }
 }

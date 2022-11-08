@@ -91,7 +91,9 @@
         "any": "cpp",
         "iomanip": "cpp",
         "valarray": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "unordered_set": "cpp",
+        "future": "cpp"
     },
     "[cpp]": {
         "editor.insertSpaces": true,
