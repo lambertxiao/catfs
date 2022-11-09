@@ -6,6 +6,8 @@
 #include "aws/s3/model/ListObjectsRequest.h"
 #include "aws/s3/model/PutObjectRequest.h"
 #include "aws/s3/model/DeleteObjectRequest.h"
+#include "aws/s3/model/GetObjectRequest.h"
+#include "aws/s3/model/GetObjectResult.h"
 #include "aws/core/http/HttpResponse.h"
 
 #include "stor/stor.h"
@@ -100,7 +102,7 @@ namespace catfs
       auto inputData = Aws::MakeShared<Aws::StringStream>("");
       if (req.buf != NULL)
         inputData->write(req.buf, req.size);
-      
+
       put_req.SetBody(inputData);
 
       auto outcome = s3_client->PutObject(put_req);
@@ -128,6 +130,26 @@ namespace catfs
       }
 
       logi("s3stor delete_file {} done", req.obj_key);
+    }
+
+    void S3Stor::read_file(ReadFileReq &req, ReadFileResp &resp)
+    {
+      auto get_req = Model::GetObjectRequest();
+      auto range = fmt::format("bytes=%d-%d", req.off, req.off + req.size - 1);
+      get_req.SetBucket(opt.bucket);
+      get_req.SetKey(req.obj_key);
+      get_req.SetRange(range);
+
+      Aws::S3::Model::GetObjectOutcome get_resp = s3_client->GetObject(get_req);
+      if (!get_resp.IsSuccess())
+      {
+        auto err_msg = get_resp.GetError().GetMessage();
+        loge("s3stor read_file error:{}", err_msg);
+        throw types::ERR_SERVER_ERROR(err_msg);
+      }
+
+      auto content_length = get_resp.GetResult().GetContentLength();
+      get_resp.GetResult().GetBody().read(resp.dst, content_length);
     }
   }
 }
