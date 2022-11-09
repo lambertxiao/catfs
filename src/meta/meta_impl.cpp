@@ -174,9 +174,7 @@ namespace catfs
     {
       auto dentry = find_dentry(pino, name, false);
       if (dentry == NULL)
-      {
         return;
-      }
 
       auto fullpath = dentry->get_full_path();
       if (!dentry->is_dir())
@@ -188,9 +186,7 @@ namespace catfs
       else
       {
         if (dentry->child_count() != 0)
-        {
           throw types::ERR_ENOTEMPTY();
-        }
 
         auto req = stor::DeleteFileReq{obj_key : fullpath + "/"};
         auto resp = stor::DeleteFileResp{};

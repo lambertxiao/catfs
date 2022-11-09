@@ -98,7 +98,9 @@ namespace catfs
       put_req.SetKey(req.obj_key);
 
       auto inputData = Aws::MakeShared<Aws::StringStream>("");
-      // inputData->write("sdsdsd", 6);
+      if (req.buf != NULL)
+        inputData->write(req.buf, req.size);
+      
       put_req.SetBody(inputData);
 
       auto outcome = s3_client->PutObject(put_req);
@@ -108,6 +110,7 @@ namespace catfs
         loge("s3stor putobject error:{}", err_msg);
         throw types::ERR_SERVER_ERROR(err_msg);
       }
+      logi("s3stor put_file {} done", req.obj_key);
     }
 
     void S3Stor::delete_file(DeleteFileReq &req, DeleteFileResp &resp)
@@ -123,6 +126,8 @@ namespace catfs
         loge("s3stor delete_file error:{}", err_msg);
         throw types::ERR_SERVER_ERROR(err_msg);
       }
+
+      logi("s3stor delete_file {} done", req.obj_key);
     }
   }
 }

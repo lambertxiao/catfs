@@ -23,33 +23,36 @@ namespace catfs
       static void init_catfs(CatFS *cfs);
       static CatFS *get_catfs();
       static void statfs(fuse_req_t req, fuse_ino_t ino);
+      static void reply_inode(fuse_req_t &req, const Inode &inode);
+      static void fill_fuse_entry_param(fuse_entry_param &e, Inode &inode);
+      static void fill_inode_attr(struct stat &stbuf, const types::Inode &inode);
+
       static void init(void *userdata, struct fuse_conn_info *conn);
       static void destroy(void *userdata);
       static void lookup(fuse_req_t req, fuse_ino_t parent, const char *name);
       static void forget(fuse_req_t req, fuse_ino_t ino, uint64_t nlookup);
       static void getattr(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
-      static void fill_inode_attr(struct stat &stbuf, const types::Inode *inode);
       static void setattr(fuse_req_t req, fuse_ino_t ino, struct stat *attr, int to_set, struct fuse_file_info *fi);
       static void readlink(fuse_req_t req, fuse_ino_t ino);
       static void mknod(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t mode, dev_t rdev);
       static void mkdir(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t mode);
-      static void reply_dentry(fuse_req_t &req, const Dentry *dentry);
       static void unlink(fuse_req_t req, fuse_ino_t parent, const char *name);
       static void rmdir(fuse_req_t req, fuse_ino_t parent, const char *name);
       static void symlink(fuse_req_t req, const char *link, fuse_ino_t parent, const char *name);
       static void rename(fuse_req_t req, fuse_ino_t parent, const char *name, fuse_ino_t newparent, const char *newname, unsigned int flags);
       static void link(fuse_req_t req, fuse_ino_t ino, fuse_ino_t newparent, const char *newname);
+      
       static void open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
       static void create(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t mode, struct fuse_file_info *fi);
       static void read(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi);
       static void write(fuse_req_t req, fuse_ino_t ino, const char *buf, size_t size, off_t off, struct fuse_file_info *fi);
       static void flush(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
       static void release(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
+      
       static void fsync(fuse_req_t req, fuse_ino_t ino, int datasync, struct fuse_file_info *fi);
       static void opendir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
       static void readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi);
       static void readdirplus(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi);
-      static void fill_fuse_entry_param(fuse_entry_param &e, Dirent &dirent);
       static void releasedir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
       static void fsyncdir(fuse_req_t req, fuse_ino_t ino, int datasync, struct fuse_file_info *fi);
       static void setxattr(fuse_req_t req, fuse_ino_t ino, const char *name, const char *value, size_t size, int flags);

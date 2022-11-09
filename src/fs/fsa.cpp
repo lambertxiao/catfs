@@ -64,7 +64,7 @@ namespace catfs
           return;
         }
 
-        reply_dentry(req, dentry);
+        reply_inode(req, *dentry->inode);
         return;
       }
       catch (std::exception &e)
@@ -95,7 +95,7 @@ namespace catfs
 
         struct stat stbuf;
         memset(&stbuf, 0, sizeof(stbuf));
-        fill_inode_attr(stbuf, inode);
+        fill_inode_attr(stbuf, *inode);
         fuse_reply_attr(req, &stbuf, 1.0);
       }
       catch (std::exception &e)
@@ -107,21 +107,22 @@ namespace catfs
       logi("fsa-getattr-done ino:{}", ino);
     }
 
-    void FuseAdapter::fill_inode_attr(struct stat &stbuf, const types::Inode *inode)
+    void FuseAdapter::fill_inode_attr(struct stat &stbuf, const types::Inode &inode)
     {
-      stbuf.st_ino = inode->ino;
-      stbuf.st_mode = inode->mode;
-      stbuf.st_gid = inode->gid;
-      stbuf.st_uid = inode->uid;
-      stbuf.st_size = inode->size;
-      stbuf.st_ctim = inode->ctime;
-      stbuf.st_mtim = inode->mtime;
+      stbuf.st_ino = inode.ino;
+      stbuf.st_mode = inode.mode;
+      stbuf.st_gid = inode.gid;
+      stbuf.st_uid = inode.uid;
+      stbuf.st_size = inode.size;
+      stbuf.st_ctim = inode.ctime;
+      stbuf.st_mtim = inode.mtime;
     }
 
     void FuseAdapter::setattr(fuse_req_t req, fuse_ino_t ino, struct stat *attr, int to_set, struct fuse_file_info *fi)
     {
-      std::cout << "fsa-setattr" << std::endl;
-      fuse_reply_err(req, EPERM);
+      logi("fsa-setattr ino:{} mode:{} to_set:{}",
+           ino, attr->st_mode, to_set);
+      fuse_reply_attr(req, attr, 1.0);
     }
 
     void FuseAdapter::readlink(fuse_req_t req, fuse_ino_t ino)
@@ -148,7 +149,7 @@ namespace catfs
           return;
         }
 
-        reply_dentry(req, dentry);
+        reply_inode(req, *dentry->inode);
         return;
       }
       catch (std::exception &e)
@@ -159,14 +160,14 @@ namespace catfs
       }
     }
 
-    void FuseAdapter::reply_dentry(fuse_req_t &req, const Dentry *dentry)
+    void FuseAdapter::reply_inode(fuse_req_t &req, const Inode &inode)
     {
       struct fuse_entry_param e;
       memset(&e, 0, sizeof(e));
-      e.ino = dentry->inode->ino;
+      e.ino = inode.ino;
       e.attr_timeout = 1.0;
       e.entry_timeout = 1.0;
-      fill_inode_attr(e.attr, dentry->inode);
+      fill_inode_attr(e.attr, inode);
       fuse_reply_entry(req, &e);
     }
 
@@ -176,6 +177,7 @@ namespace catfs
       try
       {
         catfs->remove_dentry(parent, name);
+        fuse_reply_err(req, 0);
       }
       catch (std::exception &e)
       {
@@ -251,7 +253,9 @@ namespace catfs
           return;
         }
 
-        reply_dentry(req, dentry);
+        struct fuse_entry_param e;
+        fill_fuse_entry_param(e, *dentry->inode);
+        fuse_reply_create(req, &e, fi);
         return;
       }
       catch (std::exception &e)
@@ -265,6 +269,10 @@ namespace catfs
     void FuseAdapter::read(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi)
     {
       logi("fsa-read ino:{} off:{} size:{}", ino, off, size);
+
+      char* buf = NULL;
+      int read_bytes = catfs->readfile(fi->fh, off, size, buf);
+      fuse_reply_buf(req, buf, read_bytes);
     }
 
     void FuseAdapter::write(fuse_req_t req, fuse_ino_t ino, const char *buf, size_t size, off_t off, struct fuse_file_info *fi)
@@ -275,11 +283,13 @@ namespace catfs
     void FuseAdapter::flush(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
     {
       logi("fsa-flush ino:{}", ino);
+      fuse_reply_err(req, 0);
     }
 
     void FuseAdapter::release(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)
     {
       logi("fsa-release ino:{}", ino);
+      fuse_reply_err(req, 0);
     }
 
     void FuseAdapter::fsync(fuse_req_t req, fuse_ino_t ino, int datasync, struct fuse_file_info *fi)
@@ -367,7 +377,7 @@ namespace catfs
         for (auto &d : dirents)
         {
           struct fuse_entry_param e;
-          fill_fuse_entry_param(e, d);
+          fill_fuse_entry_param(e, *d.inode);
           size_t entsize = fuse_add_direntry_plus(req, p, rem, d.name.c_str(), &e, off + idx);
           idx++;
 
@@ -387,13 +397,13 @@ namespace catfs
       logi("fsa-readdirplus-done ino:{} hno:{}", ino, fi->fh);
     }
 
-    void FuseAdapter::fill_fuse_entry_param(fuse_entry_param &e, Dirent &dirent)
+    void FuseAdapter::fill_fuse_entry_param(fuse_entry_param &e, Inode &inode)
     {
       memset(&e, 0, sizeof(e));
-      e.ino = dirent.inode->ino;
+      e.ino = inode.ino;
       e.attr_timeout = 1.0;
       e.entry_timeout = 1.0;
-      fill_inode_attr(e.attr, dirent.inode);
+      fill_inode_attr(e.attr, inode);
     }
 
     void FuseAdapter::releasedir(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi)

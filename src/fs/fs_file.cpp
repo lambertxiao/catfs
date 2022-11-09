@@ -19,5 +19,20 @@ namespace catfs
 
       return hno;
     }
+
+    int CatFS::readfile(HandleID hno, off_t off, size_t size, char* buf)
+    {
+      open_file_lock.lock_shared();
+      auto of = open_files[hno];
+      open_file_lock.unlock_shared();
+
+      if (of == NULL)
+      {
+        loge("hno:{} no such open_file", hno);
+        throw ENOENT;
+      }
+
+      return of->read(off, size, buf);
+    }
   }
 }

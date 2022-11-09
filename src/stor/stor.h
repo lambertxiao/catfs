@@ -44,7 +44,8 @@ namespace catfs
     struct PutFileReq
     {
       string obj_key;
-      // std::iostream buf;
+      char* buf = NULL;
+      size_t size;
       std::map<string, string> meta_data;
     };
 
