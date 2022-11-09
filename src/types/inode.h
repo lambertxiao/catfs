@@ -1,5 +1,5 @@
-#ifndef CATFS_INODE_H_
-#define CATFS_INODE_H_
+#ifndef CATFS_TYPES_INODE_H_
+#define CATFS_TYPES_INODE_H_
 
 #include <stdint.h>
 #include <ctime>

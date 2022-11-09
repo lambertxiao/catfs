@@ -101,7 +101,7 @@ void init_catfs(cmdline::parser &parm)
 	auto lmeta = std::make_shared<LocalMemMeta>(meta_opt);
 	std::shared_ptr<Meta> meta = std::make_shared<MetaImpl>(meta_opt, lmeta, stor);
 
-	auto cfs = new CatFS(meta);
+	auto cfs = new CatFS(meta, stor);
 	FuseAdapter::init_catfs(cfs);
 };
 

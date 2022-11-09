@@ -1,5 +1,5 @@
-#ifndef CATFS_DENTRY_H_
-#define CATFS_DENTRY_H_
+#ifndef CATFS_TYPES_DENTRY_H_
+#define CATFS_TYPES_DENTRY_H_
 #include <string>
 #include <ctime>
 #include <time.h>

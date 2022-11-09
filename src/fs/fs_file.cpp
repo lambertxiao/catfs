@@ -1,10 +1,12 @@
 #include "fs/fs.h"
 #include "fs/open_file.h"
+#include "fs/freader/freader_direct.h"
+#include "types/rtfile.h"
 
 namespace catfs
 {
   namespace fs {
-    types::HandleID CatFS::openfile(InodeID ino)
+    types::HandleID CatFS::openfile(InodeID ino, int flags)
     {
       auto dentry = meta->get_dentry(ino);
       if (dentry == NULL)
@@ -12,6 +14,12 @@ namespace catfs
 
       auto hno = get_next_handle_id();
       auto openfile = new OpenFile(dentry->inode->ino, hno);
+
+      // todo 判断flags
+
+      auto file_ptr = std::make_shared<types::RTFile>(dentry->get_full_path(), dentry->inode->size);
+      openfile->reader = new DirectReader(file_ptr);
+      openfile->reader->set_stor(this->stor);
 
       open_file_lock.lock();
       open_files[hno] = openfile;

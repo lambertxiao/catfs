@@ -150,6 +150,7 @@ namespace catfs
 
       auto content_length = get_resp.GetResult().GetContentLength();
       get_resp.GetResult().GetBody().read(resp.dst, content_length);
+      resp.bytes = content_length;
     }
   }
 }

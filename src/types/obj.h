@@ -1,5 +1,5 @@
-#ifndef CATFS_OBJ_H_
-#define CATFS_OBJ_H_
+#ifndef CATFS_TYPES_OBJ_H_
+#define CATFS_TYPES_OBJ_H_
 
 #include <string>
 

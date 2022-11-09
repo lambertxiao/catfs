@@ -1,5 +1,5 @@
-#ifndef CATFS_FTREENODE_H_
-#define CATFS_FTREENODE_H_
+#ifndef CATFS_TYPES_FTREENODE_H_
+#define CATFS_TYPES_FTREENODE_H_
 
 #include <string>
 #include <unordered_map>

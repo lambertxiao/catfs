@@ -6,7 +6,8 @@ namespace catfs
   {
     int OpenFile::read(off_t off, size_t size, char* buf)
     {
-
+      // todo 提前判断文件大小，off等条件
+      return reader->read(off, size, buf);
     }
   }
 }

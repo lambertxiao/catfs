@@ -224,7 +224,7 @@ namespace catfs
 
       try
       {
-        auto hno = catfs->openfile(ino);
+        auto hno = catfs->openfile(ino, fi->flags);
         fi->fh = hno;
         fuse_reply_open(req, fi);
         logi("fsa-open-done ino:{} hno:{}", ino, hno);
