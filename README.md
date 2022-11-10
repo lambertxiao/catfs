@@ -2,6 +2,38 @@
 
 FUSE-based file system backed by Amazon S3, UCloud S3
 
+## 写在前面
+
+本项目还处于开发阶段，当前支持功能如下
+
+- [ ] 目录相关操作
+    - [x] mkdir
+    - [x] open_dir
+    - [x] read_dir
+    - [x] release_dir
+
+- [ ] 文件相关操作
+    - [x] open
+    - [x] read
+        - [x] direct read
+        - [ ] read aheaed
+    - [ ] write
+        - [ ] 顺序写
+        - [ ] 随机写
+    - [ ] flush
+    - [x] release
+
+- [ ] meta
+    - [ ] 使用本地内存存meta
+    - [ ] 使用redis存meta
+
+- [ ] 链接支持
+
+    - [ ] 软链
+    - [ ] 硬链
+
+## 架构图
+
 ## 开发环境配置
 
 ### 下载源码
