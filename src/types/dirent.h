@@ -4,19 +4,16 @@
 #include "inode.h"
 #include <string>
 
-namespace catfs
-{
-  namespace types
-  {
+namespace catfs {
+namespace types {
 
-    class Dirent
-    {
-    public:
-      std::string name;
-      // InodeID pino;
-      Inode* inode;
-    };
+class Dirent {
+public:
+  std::string name;
+  // InodeID pino;
+  Inode *inode;
+};
 
-  } // namespace types
+} // namespace types
 } // namespace catfs
 #endif

@@ -3,17 +3,14 @@
 
 #include <time.h>
 
-namespace catfs
-{
-  namespace util
-  {
-    static timespec now()
-    {
-      timespec tc;
-      timespec_get(&tc, TIME_UTC);
-      return tc;
-    }
-  }
+namespace catfs {
+namespace util {
+static timespec now() {
+  timespec tc;
+  timespec_get(&tc, TIME_UTC);
+  return tc;
 }
+} // namespace util
+} // namespace catfs
 
 #endif
