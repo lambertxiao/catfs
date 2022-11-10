@@ -135,7 +135,8 @@ namespace catfs
     void S3Stor::read_file(ReadFileReq &req, ReadFileResp &resp)
     {
       auto get_req = Model::GetObjectRequest();
-      auto range = fmt::format("bytes=%d-%d", req.off, req.off + req.size - 1);
+      auto range = fmt::format("bytes={}-{}", req.off, req.off + req.size - 1);
+      logi("s3tor read {} with range {}", req.obj_key, range);
       get_req.SetBucket(opt.bucket);
       get_req.SetKey(req.obj_key);
       get_req.SetRange(range);

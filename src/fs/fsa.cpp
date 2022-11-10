@@ -270,9 +270,19 @@ namespace catfs
     {
       logi("fsa-read ino:{} off:{} size:{}", ino, off, size);
 
-      char* buf = NULL;
-      int read_bytes = catfs->readfile(fi->fh, off, size, buf);
-      fuse_reply_buf(req, buf, read_bytes);
+      try
+      {
+        char *buf = (char *)malloc(size * sizeof(char));
+        int read_bytes = catfs->readfile(fi->fh, off, size, buf);
+        fuse_reply_buf(req, buf, read_bytes);
+        free(buf);
+      }
+      catch (const std::exception &e)
+      {
+        loge("fsa-read error, ino:{} off:{} size:{} err:{}", ino, off, size, e.what());
+        fuse_reply_err(req, EIO);
+        return;
+      }
     }
 
     void FuseAdapter::write(fuse_req_t req, fuse_ino_t ino, const char *buf, size_t size, off_t off, struct fuse_file_info *fi)
