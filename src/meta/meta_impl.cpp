@@ -1,22 +1,19 @@
 #include "meta/meta_impl.h"
+#include <map>
 #include "fmtlog/fmtlog.h"
 #include "meta/meta.h"
 #include "stor/stor.h"
 #include "types/inode.h"
 #include "types/obj.h"
 #include "util/time.h"
-#include <map>
 
 namespace catfs {
 namespace meta {
 USING_TYPES
 
-Inode *MetaImpl::get_inode(InodeID ino) {
-  return local_meta.get()->get_inode(ino);
-};
+Inode *MetaImpl::get_inode(InodeID ino) { return local_meta.get()->get_inode(ino); };
 
-void MetaImpl::get_remote_obj(Dentry &parent, const std::string &name,
-                              types::ObjInfo &obj, bool &exist, bool &is_dir) {
+void MetaImpl::get_remote_obj(Dentry &parent, const std::string &name, types::ObjInfo &obj, bool &exist, bool &is_dir) {
   // 1. 检查是否有同名的文件
   // 2. 检查是否有同名的目录
   auto fullpath = parent.get_full_path_with_slash() + name;
@@ -34,16 +31,13 @@ void MetaImpl::get_remote_obj(Dentry &parent, const std::string &name,
   obj = resp.obj;
 }
 
-Dentry *MetaImpl::find_dentry(InodeID pino, const std::string &name,
-                              bool onlyLocal) {
+Dentry *MetaImpl::find_dentry(InodeID pino, const std::string &name, bool onlyLocal) {
   auto dentry = local_meta.get()->find_dentry(pino, name);
   if (dentry == NULL) {
-    if (onlyLocal)
-      return NULL;
+    if (onlyLocal) return NULL;
 
     auto parent = local_meta->get_dentry(pino);
-    if (parent == NULL)
-      throw types::InvalidInodeID(pino);
+    if (parent == NULL) throw types::InvalidInodeID(pino);
 
     types::ObjInfo obj;
     bool obj_exist;
@@ -59,18 +53,15 @@ Dentry *MetaImpl::find_dentry(InodeID pino, const std::string &name,
     // 举个例子，如果当前ls的目录为a/b，但服务端存在以a/b/*为前缀的key，需要将a/b的目录在本地创建出来
     auto prefix = parent->get_full_path_with_slash() + name;
     auto exist = is_remote_dir_exist(prefix);
-    if (!exist)
-      return NULL;
+    if (!exist) return NULL;
 
     // add virtual dir in local
     dentry = parent->add_child(
-        name, local_meta->create_new_inode(
-                  parent->inode->mode, parent->inode->gid, parent->inode->uid));
+        name, local_meta->create_new_inode(parent->inode->mode, parent->inode->gid, parent->inode->uid));
     dentry->inc_ttl(opt.dcache_timeout);
     return dentry;
   } else {
-    if (!dentry->is_expired())
-      return dentry;
+    if (!dentry->is_expired()) return dentry;
 
     std::string path;
     if (dentry->is_dir())
@@ -123,11 +114,9 @@ bool MetaImpl::is_remote_dir_exist(const std::string &path) {
   return resp.objs.size() > 0;
 }
 
-Dentry *MetaImpl::create_dentry(InodeID pino, const std::string &name,
-                                mode_t mode) {
+Dentry *MetaImpl::create_dentry(InodeID pino, const std::string &name, mode_t mode) {
   auto dentry = find_dentry(pino, name, false);
-  if (dentry != NULL)
-    return dentry;
+  if (dentry != NULL) return dentry;
 
   auto parent = local_meta->get_dentry(pino);
 
@@ -138,8 +127,7 @@ Dentry *MetaImpl::create_dentry(InodeID pino, const std::string &name,
   else
     obj_key = parent->get_full_path() + "/" + name;
 
-  if ((mode & S_IFDIR) != 0)
-    obj_key += "/";
+  if ((mode & S_IFDIR) != 0) obj_key += "/";
 
   std::map<string, string> meta_data;
   meta_data["mode"] = mode;
@@ -152,8 +140,7 @@ Dentry *MetaImpl::create_dentry(InodeID pino, const std::string &name,
   };
   auto resp = stor::PutFileResp{};
   stor->put_file(req, resp);
-  auto inode = local_meta->create_new_inode(mode, parent->inode->gid,
-                                            parent->inode->uid);
+  auto inode = local_meta->create_new_inode(mode, parent->inode->gid, parent->inode->uid);
   dentry = local_meta->create_dentry(pino, name, inode);
 
   return dentry;
@@ -161,8 +148,7 @@ Dentry *MetaImpl::create_dentry(InodeID pino, const std::string &name,
 
 void MetaImpl::remove_dentry(InodeID pino, const std::string &name) {
   auto dentry = find_dentry(pino, name, false);
-  if (dentry == NULL)
-    return;
+  if (dentry == NULL) return;
 
   auto fullpath = dentry->get_full_path();
   if (!dentry->is_dir()) {
@@ -170,8 +156,7 @@ void MetaImpl::remove_dentry(InodeID pino, const std::string &name) {
     auto resp = stor::DeleteFileResp{};
     stor->delete_file(req, resp);
   } else {
-    if (dentry->child_count() != 0)
-      throw types::ERR_ENOTEMPTY();
+    if (dentry->child_count() != 0) throw types::ERR_ENOTEMPTY();
 
     auto req = stor::DeleteFileReq{obj_key : fullpath + "/"};
     auto resp = stor::DeleteFileResp{};
@@ -181,36 +166,29 @@ void MetaImpl::remove_dentry(InodeID pino, const std::string &name) {
   local_meta->remove_dentry(pino, name);
 }
 
-Dentry *MetaImpl::get_dentry(InodeID ino) {
-  return local_meta->get_dentry(ino);
-}
+Dentry *MetaImpl::get_dentry(InodeID ino) { return local_meta->get_dentry(ino); }
 
 void MetaImpl::load_sub_dentries(InodeID ino, std::vector<Dirent> &dirents) {
   auto dentry = local_meta->get_dentry(ino);
-  if (dentry == NULL)
-    throw types::ERR_ENOENT();
+  if (dentry == NULL) throw types::ERR_ENOENT();
 
   dirents.push_back(Dirent{name : ".", inode : dentry->inode});
   dirents.push_back(Dirent{name : "..", inode : dentry->inode});
 
   if (!dentry->is_complete() || dentry->is_expired()) {
-    logi("ino:{} refresh sub dentries is_complete:{}, is_expired:{}", ino,
-         dentry->is_complete(), dentry->is_expired());
+    logi("ino:{} refresh sub dentries is_complete:{}, is_expired:{}", ino, dentry->is_complete(), dentry->is_expired());
     refresh_sub_dentries(*dentry, false);
   }
 
   dentry->children_list(dirents);
 }
 
-void MetaImpl::build_ftree_from_listobjects(std::string &req_prefix,
-                                            stor::ListObjectsResp &resp,
+void MetaImpl::build_ftree_from_listobjects(std::string &req_prefix, stor::ListObjectsResp &resp,
                                             types::FTreeNode &root) {
   // todo 目前只处理下一级别目录，后续需要支持delimiter为""的情况
   for (auto &prefix : resp.common_prefixes) {
-    auto dirname =
-        prefix.substr(req_prefix.size(), prefix.size() - req_prefix.size() - 1);
-    if (dirname == "")
-      continue;
+    auto dirname = prefix.substr(req_prefix.size(), prefix.size() - req_prefix.size() - 1);
+    if (dirname == "") continue;
 
     auto dir_node = types::FTreeNode{name : dirname, is_dir : true};
     root.children[dirname] = dir_node;
@@ -241,8 +219,7 @@ void MetaImpl::refresh_sub_dentries(Dentry &dentry, bool recursive) {
     build_ftree_from_listobjects(prefix, resp, root);
     local_meta->build_dentries(dentry.inode->ino, root);
 
-    if (!resp.is_trunc)
-      break;
+    if (!resp.is_trunc) break;
 
     marker = resp.next_marker;
     logd("listobjects is trunc, marker:{}", marker);
@@ -250,5 +227,5 @@ void MetaImpl::refresh_sub_dentries(Dentry &dentry, bool recursive) {
 
   local_meta->clear_unsync_dentry(dentry);
 }
-} // namespace meta
-} // namespace catfs
+}  // namespace meta
+}  // namespace catfs

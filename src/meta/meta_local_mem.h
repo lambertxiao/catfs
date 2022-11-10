@@ -18,14 +18,14 @@ USING_TYPES
 const uint32_t LOCK_COUNT = 64;
 
 class LocalMemMeta : public LocalMeta {
-private:
+ private:
   MetaOpt opt;
   InodeID next_inode_id;
   Dentry *root_dentry;
   std::shared_mutex next_inode_id_locker;
-  mutable std::shared_mutex m_locks[LOCK_COUNT];        // 多段锁
-  std::map<InodeID, Dentry *> dentry_index[LOCK_COUNT]; // dentry的索引
-public:
+  mutable std::shared_mutex m_locks[LOCK_COUNT];         // 多段锁
+  std::map<InodeID, Dentry *> dentry_index[LOCK_COUNT];  // dentry的索引
+ public:
   LocalMemMeta(MetaOpt &opt);
 
   void save_dentry_index(Dentry *);
@@ -43,13 +43,11 @@ public:
   Dentry *get_dentry(InodeID ino) override;
   Dentry *create_dentry(InodeID pino, std::string name, Inode *inode) override;
   Dentry *find_dentry(InodeID pino, std::string name) override;
-  Dentry *create_dentry_from_obj(InodeID pino, std::string name,
-                                 types::ObjInfo obj, bool is_dir) override;
+  Dentry *create_dentry_from_obj(InodeID pino, std::string name, types::ObjInfo obj, bool is_dir) override;
   void remove_dentry(InodeID pino, std::string name) override;
-  void rename(InodeID src_pino, std::string src_name, InodeID dst_pino,
-              std::string dst_name) override;
+  void rename(InodeID src_pino, std::string src_name, InodeID dst_pino, std::string dst_name) override;
   Inode *create_new_inode(mode_t mode, uint32_t gid, uint32_t uid) override;
 };
-} // namespace meta
-} // namespace catfs
+}  // namespace meta
+}  // namespace catfs
 #endif

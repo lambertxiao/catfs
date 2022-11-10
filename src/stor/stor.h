@@ -71,14 +71,14 @@ struct StorOpt {
 };
 
 class Stor {
-public:
+ public:
   virtual void head_file(HeadFileReq &req, HeadFileResp &resp) = 0;
   virtual void list_objects(ListObjectsReq &req, ListObjectsResp &resp) = 0;
   virtual void put_file(PutFileReq &req, PutFileResp &resp) = 0;
   virtual void read_file(ReadFileReq &req, ReadFileResp &resp) = 0;
   virtual void delete_file(DeleteFileReq &req, DeleteFileResp &resp) = 0;
 };
-} // namespace stor
-} // namespace catfs
+}  // namespace stor
+}  // namespace catfs
 
 #endif

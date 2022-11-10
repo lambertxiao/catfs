@@ -14,6 +14,6 @@ struct ObjInfo {
   uint32_t *gid = NULL;
   mode_t *mode = NULL;
 };
-} // namespace types
-} // namespace catfs
+}  // namespace types
+}  // namespace catfs
 #endif

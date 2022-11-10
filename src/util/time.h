@@ -10,7 +10,7 @@ static timespec now() {
   timespec_get(&tc, TIME_UTC);
   return tc;
 }
-} // namespace util
-} // namespace catfs
+}  // namespace util
+}  // namespace catfs
 
 #endif

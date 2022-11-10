@@ -1,15 +1,15 @@
 #ifndef CATFS_FS_OPENDIR_H_
 #define CATFS_FS_OPENDIR_H_
 
+#include <vector>
 #include "types/dirent.h"
 #include "types/handle.h"
 #include "types/inode.h"
-#include <vector>
 
 namespace catfs {
 namespace fs {
 class OpenDir {
-public:
+ public:
   types::InodeID ino;
   types::HandleID hno;
   std::vector<types::Dirent> dentries;
@@ -19,7 +19,7 @@ public:
     this->hno = hno;
   }
 };
-} // namespace fs
-} // namespace catfs
+}  // namespace fs
+}  // namespace catfs
 
 #endif

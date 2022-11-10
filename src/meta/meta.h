@@ -8,10 +8,10 @@
 
 #include <string>
 
-#define USING_TYPES                                                            \
-  using types::InodeID;                                                        \
-  using types::Inode;                                                          \
-  using types::Dentry;                                                         \
+#define USING_TYPES     \
+  using types::InodeID; \
+  using types::Inode;   \
+  using types::Dentry;  \
   using types::Dirent;
 
 namespace catfs {
@@ -27,12 +27,10 @@ struct MetaOpt {
 };
 
 class Meta {
-public:
+ public:
   virtual Inode *get_inode(InodeID ino) = 0;
-  virtual Dentry *find_dentry(InodeID pino, const std::string &name,
-                              bool onlyLocal) = 0;
-  virtual Dentry *create_dentry(InodeID pino, const std::string &name,
-                                mode_t mode) = 0;
+  virtual Dentry *find_dentry(InodeID pino, const std::string &name, bool onlyLocal) = 0;
+  virtual Dentry *create_dentry(InodeID pino, const std::string &name, mode_t mode) = 0;
   virtual void remove_dentry(InodeID pino, const std::string &name) = 0;
   virtual Dentry *get_dentry(InodeID ino) = 0;
   virtual void load_sub_dentries(InodeID ino, std::vector<Dirent> &dirents) = 0;
@@ -50,6 +48,6 @@ public:
   // void destory() = 0;
 };
 
-} // namespace meta
-} // namespace catfs
+}  // namespace meta
+}  // namespace catfs
 #endif

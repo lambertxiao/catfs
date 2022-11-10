@@ -7,7 +7,7 @@ namespace catfs {
 namespace types {
 // runtime file，记录正常读写的文件
 class RTFile {
-public:
+ public:
   std::string path;
   uint64_t size;
   RTFile(std::string path, uint64_t size) {
@@ -15,6 +15,6 @@ public:
     this->size = size;
   }
 };
-} // namespace types
-} // namespace catfs
+}  // namespace types
+}  // namespace catfs
 #endif

@@ -14,5 +14,5 @@ int DirectReader::read(off_t off, size_t size, char *dst) {
   stor->read_file(req, resp);
   return resp.bytes;
 };
-} // namespace fs
-} // namespace catfs
+}  // namespace fs
+}  // namespace catfs

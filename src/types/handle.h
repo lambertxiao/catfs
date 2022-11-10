@@ -5,6 +5,6 @@ namespace catfs {
 namespace types {
 using HandleID = uint64_t;
 }
-} // namespace catfs
+}  // namespace catfs
 
 #endif

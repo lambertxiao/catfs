@@ -90,8 +90,7 @@ void S3Stor::put_file(PutFileReq &req, PutFileResp &resp) {
   put_req.SetKey(req.obj_key);
 
   auto inputData = Aws::MakeShared<Aws::StringStream>("");
-  if (req.buf != NULL)
-    inputData->write(req.buf, req.size);
+  if (req.buf != NULL) inputData->write(req.buf, req.size);
 
   put_req.SetBody(inputData);
 
@@ -138,5 +137,5 @@ void S3Stor::read_file(ReadFileReq &req, ReadFileResp &resp) {
   get_resp.GetResult().GetBody().read(resp.dst, content_length);
   resp.bytes = content_length;
 }
-} // namespace stor
-} // namespace catfs
+}  // namespace stor
+}  // namespace catfs

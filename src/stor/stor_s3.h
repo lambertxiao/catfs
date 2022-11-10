@@ -10,11 +10,11 @@
 namespace catfs {
 namespace stor {
 class S3Stor : public Stor {
-private:
+ private:
   StorOpt opt;
   Aws::S3::S3Client *s3_client;
 
-public:
+ public:
   S3Stor(const StorOpt &opt) {
     this->opt = opt;
 
@@ -34,13 +34,12 @@ public:
   ~S3Stor() { delete s3_client; }
 
   virtual void head_file(HeadFileReq &req, HeadFileResp &resp) override;
-  virtual void list_objects(ListObjectsReq &req,
-                            ListObjectsResp &resp) override;
+  virtual void list_objects(ListObjectsReq &req, ListObjectsResp &resp) override;
   virtual void put_file(PutFileReq &req, PutFileResp &resp) override;
   virtual void read_file(ReadFileReq &req, ReadFileResp &resp) override;
   virtual void delete_file(DeleteFileReq &req, DeleteFileResp &resp) override;
 };
-} // namespace stor
-} // namespace catfs
+}  // namespace stor
+}  // namespace catfs
 
 #endif

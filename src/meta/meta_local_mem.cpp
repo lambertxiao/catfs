@@ -1,7 +1,7 @@
 #include <fcntl.h>
+#include <time.h>
 #include <functional>
 #include <queue>
-#include <time.h>
 
 #include "fmtlog/fmtlog.h"
 #include "meta/meta_local_mem.h"
@@ -52,8 +52,7 @@ types::Inode *LocalMemMeta::get_inode(types::InodeID ino) {
   return dentry->inode;
 }
 
-Inode *LocalMemMeta::update_inode(InodeID ino, InodeUpdateAttr updater,
-                                  bool sync) {
+Inode *LocalMemMeta::update_inode(InodeID ino, InodeUpdateAttr updater, bool sync) {
   auto inode = get_inode(ino);
   if (inode == NULL) {
     throw types::InvalidInodeID(ino);
@@ -75,16 +74,11 @@ Inode *LocalMemMeta::update_inode(InodeID ino, InodeUpdateAttr updater,
   return inode;
 }
 
-void LocalMemMeta::remove_inode(InodeID ino) {
-  wlock_dentry_idx dentry_index[ino % LOCK_COUNT].erase(ino);
-}
+void LocalMemMeta::remove_inode(InodeID ino) { wlock_dentry_idx dentry_index[ino % LOCK_COUNT].erase(ino); }
 
-Dentry *LocalMemMeta::get_dentry(InodeID ino) {
-  rlock_dentry_idx return dentry_index[ino % LOCK_COUNT][ino];
-}
+Dentry *LocalMemMeta::get_dentry(InodeID ino) { rlock_dentry_idx return dentry_index[ino % LOCK_COUNT][ino]; }
 
-Dentry *LocalMemMeta::create_dentry(InodeID pino, std::string name,
-                                    Inode *inode) {
+Dentry *LocalMemMeta::create_dentry(InodeID pino, std::string name, Inode *inode) {
   auto parent = get_dentry(pino);
   if (parent == NULL) {
     throw types::InvalidInodeID(pino);
@@ -94,8 +88,7 @@ Dentry *LocalMemMeta::create_dentry(InodeID pino, std::string name,
   return target;
 }
 
-Dentry *LocalMemMeta::add_child_for_dentry(Dentry *parent, std::string name,
-                                           Inode *inode) {
+Dentry *LocalMemMeta::add_child_for_dentry(Dentry *parent, std::string name, Inode *inode) {
   auto child = parent->add_child(name, inode);
   this->save_dentry_index(child);
   return child;
@@ -110,8 +103,7 @@ Dentry *LocalMemMeta::find_dentry(InodeID pino, std::string name) {
   return parent->get_child(name);
 }
 
-Dentry *LocalMemMeta::create_dentry_from_obj(InodeID pino, std::string name,
-                                             types::ObjInfo obj, bool is_dir) {
+Dentry *LocalMemMeta::create_dentry_from_obj(InodeID pino, std::string name, types::ObjInfo obj, bool is_dir) {
   auto parent = get_dentry(pino);
   if (parent == NULL) {
     throw types::InvalidInodeID(pino);
@@ -166,8 +158,7 @@ void LocalMemMeta::remove_dentry(InodeID pino, std::string name) {
   parent->remove_child(name);
 }
 
-void LocalMemMeta::rename(InodeID src_pino, std::string src_name,
-                          InodeID dst_pino, std::string dst_name) {
+void LocalMemMeta::rename(InodeID src_pino, std::string src_name, InodeID dst_pino, std::string dst_name) {
   auto src_parent = get_dentry(src_pino);
   if (src_parent == NULL) {
     throw types::InvalidInodeID(src_pino);
@@ -179,8 +170,7 @@ void LocalMemMeta::rename(InodeID src_pino, std::string src_name,
   }
 
   auto src_dentry = src_parent->get_child(src_name);
-  if (src_dentry == NULL)
-    return;
+  if (src_dentry == NULL) return;
 
   src_parent->remove_child(src_name);
   add_child_for_dentry(dst_parent, dst_name, src_dentry->inode);
@@ -204,26 +194,19 @@ InodeID LocalMemMeta::get_next_inode_id() {
 }
 
 void LocalMemMeta::build_dentries(InodeID pino, types::FTreeNode &root) {
-  std::function<void(Dentry * parent,
-                     std::unordered_map<string, types::FTreeNode> & children)>
-      build;
+  std::function<void(Dentry * parent, std::unordered_map<string, types::FTreeNode> & children)> build;
 
-  build = [this,
-           &build](Dentry *parent,
-                   std::unordered_map<string, types::FTreeNode> &children) {
+  build = [this, &build](Dentry *parent, std::unordered_map<string, types::FTreeNode> &children) {
     parent->synced = true;
     for (auto &[_, child] : children) {
       auto child_dentry = parent->get_child(child.name);
 
       if (child_dentry == NULL)
-        child_dentry = create_dentry_from_obj(parent->inode->ino, child.name,
-                                              child.oinfo, child.is_dir);
+        child_dentry = create_dentry_from_obj(parent->inode->ino, child.name, child.oinfo, child.is_dir);
       else
-        child_dentry->update(child.oinfo.size, child.oinfo.ctime,
-                             child.oinfo.mtime);
+        child_dentry->update(child.oinfo.size, child.oinfo.ctime, child.oinfo.mtime);
 
-      if (child.is_dir)
-        build(child_dentry, child.children);
+      if (child.is_dir) build(child_dentry, child.children);
 
       child_dentry->synced = true;
     }
@@ -271,5 +254,5 @@ void LocalMemMeta::clear_unsync_dentry(Dentry &parent) {
     }
   }
 }
-} // namespace meta
-} // namespace catfs
+}  // namespace meta
+}  // namespace catfs

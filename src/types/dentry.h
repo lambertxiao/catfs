@@ -1,23 +1,23 @@
 #ifndef CATFS_TYPES_DENTRY_H_
 #define CATFS_TYPES_DENTRY_H_
-#include "fmtlog/fmtlog.h"
-#include "types/dirent.h"
-#include "util/time.h"
-#include <ctime>
 #include <fcntl.h>
+#include <time.h>
+#include <ctime>
 #include <mutex>
 #include <shared_mutex>
 #include <string>
-#include <time.h>
 #include <unordered_map>
 #include <vector>
+#include "fmtlog/fmtlog.h"
+#include "types/dirent.h"
+#include "util/time.h"
 
 namespace catfs {
 namespace types {
 const uint32_t D_COMPLETE = 1;
 
 class Dentry {
-public:
+ public:
   std::shared_mutex mutex;
   std::string name;
   Dentry *parent = NULL;
@@ -40,8 +40,7 @@ public:
   bool is_root() { return this->inode->ino == ROOT_INODE_ID; }
 
   std::string get_full_path() {
-    if (is_root())
-      return "";
+    if (is_root()) return "";
 
     auto fullpath = this->name;
     auto parent = this->parent;
@@ -55,8 +54,7 @@ public:
   }
 
   std::string get_full_path_with_slash() {
-    if (is_root())
-      return "";
+    if (is_root()) return "";
     return get_full_path() + "/";
   }
 

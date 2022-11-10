@@ -14,6 +14,6 @@ struct FTreeNode {
   std::unordered_map<std::string, types::FTreeNode> children;
   types::ObjInfo oinfo;
 };
-} // namespace types
-} // namespace catfs
+}  // namespace types
+}  // namespace catfs
 #endif

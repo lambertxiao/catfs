@@ -1,19 +1,19 @@
 #ifndef CATFS_TYPES_DIRENT_H_
 #define CATFS_TYPES_DIRENT_H_
 
-#include "inode.h"
 #include <string>
+#include "inode.h"
 
 namespace catfs {
 namespace types {
 
 class Dirent {
-public:
+ public:
   std::string name;
   // InodeID pino;
   Inode *inode;
 };
 
-} // namespace types
-} // namespace catfs
+}  // namespace types
+}  // namespace catfs
 #endif

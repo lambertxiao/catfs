@@ -89,8 +89,7 @@ void init_catfs(cmdline::parser &parm) {
   };
 
   auto lmeta = std::make_shared<LocalMemMeta>(meta_opt);
-  std::shared_ptr<Meta> meta =
-      std::make_shared<MetaImpl>(meta_opt, lmeta, stor);
+  std::shared_ptr<Meta> meta = std::make_shared<MetaImpl>(meta_opt, lmeta, stor);
 
   auto cfs = new CatFS(meta, stor);
   FuseAdapter::init_catfs(cfs);
@@ -103,21 +102,15 @@ void set_cmdline(cmdline::parser &parm) {
   parm.add<string>("public_key", '\0', "public key", false, "");
   parm.add<string>("private_key", '\0', "private key", false, "");
   parm.add<string>("endpoint", '\0', "storage backend endpoint", false, "");
-  parm.add<string>("stor_backend", '\0', "specified storage backend", false,
-                   "s3");
-  parm.add<string>("passwd", '\0', "specify access file", false,
-                   "/etc/catfs/catfs.yaml");
+  parm.add<string>("stor_backend", '\0', "specified storage backend", false, "s3");
+  parm.add<string>("passwd", '\0', "specify access file", false, "/etc/catfs/catfs.yaml");
 
   parm.add<uint32_t>("gid", '\0', "gid", false, 0);
   parm.add<uint32_t>("uid", '\0', "uid", false, 0);
-  parm.add<uint32_t>("dcache_timeout", '\0',
-                     "dentry cache timeout, unit is seconds", false, 60 * 5);
-  parm.add<uint32_t>("retry", '\0', "number of times to retry a failed I/O",
-                     false, 3);
-  parm.add<uint32_t>("parallel", '\0', "number of parallel I/O thread", false,
-                     32);
-  parm.add<string>("level", '\0', "set log level: error/warn/info/debug", false,
-                   "info");
+  parm.add<uint32_t>("dcache_timeout", '\0', "dentry cache timeout, unit is seconds", false, 60 * 5);
+  parm.add<uint32_t>("retry", '\0', "number of times to retry a failed I/O", false, 3);
+  parm.add<uint32_t>("parallel", '\0', "number of parallel I/O thread", false, 32);
+  parm.add<string>("level", '\0', "set log level: error/warn/info/debug", false, "info");
   parm.add<string>("log_dir", '\0', "set log dir", false, "");
 
   parm.add("foreground", 'f', "running in foreground");
@@ -152,17 +145,13 @@ int main(int argc, char **argv) {
     args.argv[1] = (char *)"-o";
     args.argv[2] = (char *)"auto_unmount";
 
-    struct fuse_session *se =
-        fuse_session_new(&args, &catfs_oper, sizeof(catfs_oper), NULL);
+    struct fuse_session *se = fuse_session_new(&args, &catfs_oper, sizeof(catfs_oper), NULL);
 
-    if (se == NULL)
-      goto err_out1;
+    if (se == NULL) goto err_out1;
 
-    if (fuse_set_signal_handlers(se) != 0)
-      goto err_out2;
+    if (fuse_set_signal_handlers(se) != 0) goto err_out2;
 
-    if (fuse_session_mount(se, mp) != 0)
-      goto err_out3;
+    if (fuse_session_mount(se, mp) != 0) goto err_out3;
 
     fuse_daemonize(parm.exist("foreground"));
 

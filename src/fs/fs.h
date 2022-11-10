@@ -1,11 +1,11 @@
 #ifndef CATFS_FS_FS_H_
 #define CATFS_FS_FS_H_
 
-#include "mutex"
-#include "shared_mutex"
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include "mutex"
+#include "shared_mutex"
 
 #include "fs/fuse.h"
 #include "fs/open_dir.h"
@@ -27,7 +27,7 @@ using catfs::types::InodeID;
 struct CatFsOpt {};
 
 class CatFS {
-private:
+ private:
   std::shared_ptr<Meta> meta;
   std::shared_ptr<stor::Stor> stor;
   HandleID next_handle_id = 0;
@@ -37,7 +37,7 @@ private:
   std::unordered_map<HandleID, OpenDir *> open_dirs;
   std::unordered_map<HandleID, OpenFile *> open_files;
 
-public:
+ public:
   CatFS(std::shared_ptr<Meta> meta, std::shared_ptr<stor::Stor> stor) {
     this->meta = meta;
     this->stor = stor;
@@ -56,6 +56,6 @@ public:
   void release_dir(InodeID ino, HandleID hno);
   HandleID get_next_handle_id();
 };
-} // namespace fs
-} // namespace catfs
+}  // namespace fs
+}  // namespace catfs
 #endif
