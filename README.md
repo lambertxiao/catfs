@@ -17,10 +17,13 @@ FUSE-based file system backed by Amazon S3, UCloud S3
     - [x] read
         - [x] direct read
         - [ ] read aheaed
+        - [ ] read_after_write_done
     - [ ] write
         - [ ] 顺序写
         - [ ] 随机写
     - [ ] flush
+        - [ ] sync_flush
+        - [ ] async_flush
     - [x] release
 
 - [ ] meta
