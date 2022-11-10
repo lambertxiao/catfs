@@ -1,5 +1,5 @@
-#ifndef CATFS_DIRENT_H
-#define CATFS_DIRENT_H
+#ifndef CATFS_TYPES_DIRENT_H_
+#define CATFS_TYPES_DIRENT_H_
 
 #include "inode.h"
 #include <string>
@@ -13,8 +13,8 @@ namespace catfs
     {
     public:
       std::string name;
-      InodeID pino;
-      Inode inode;
+      // InodeID pino;
+      Inode* inode;
     };
 
   } // namespace types
