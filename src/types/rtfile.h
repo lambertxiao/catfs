@@ -3,22 +3,18 @@
 
 #include <string>
 
-namespace catfs
-{
-  namespace types
-  {
-    // runtime file，记录正常读写的文件
-    class RTFile
-    {
-    public:
-      std::string path;
-      uint64_t size;
-      RTFile(std::string path, uint64_t size)
-      {
-        this->path = path;
-        this->size = size;
-      }
-    };
+namespace catfs {
+namespace types {
+// runtime file，记录正常读写的文件
+class RTFile {
+ public:
+  std::string path;
+  uint64_t size;
+  RTFile(std::string path, uint64_t size) {
+    this->path = path;
+    this->size = size;
   }
-}
+};
+}  // namespace types
+}  // namespace catfs
 #endif

@@ -6,17 +6,14 @@
 
 #include "types/obj.h"
 
-namespace catfs
-{
-  namespace types
-  {
-    struct FTreeNode
-    {
-      std::string name;
-      bool is_dir;
-      std::unordered_map<std::string, types::FTreeNode> children;
-      types::ObjInfo oinfo;
-    };
-  }
-}
+namespace catfs {
+namespace types {
+struct FTreeNode {
+  std::string name;
+  bool is_dir;
+  std::unordered_map<std::string, types::FTreeNode> children;
+  types::ObjInfo oinfo;
+};
+}  // namespace types
+}  // namespace catfs
 #endif
