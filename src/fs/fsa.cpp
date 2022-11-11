@@ -224,6 +224,14 @@ void FuseAdapter::read(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, s
 void FuseAdapter::write(fuse_req_t req, fuse_ino_t ino, const char *buf, size_t size, off_t off,
                         struct fuse_file_info *fi) {
   logi("fsa-write ino:{} off:{} size:{}", ino, off, size);
+   try {
+    int n = catfs->writefile(fi->fh, off, size, buf);
+    fuse_reply_write(req, n);
+  } catch (const std::exception &e) {
+    loge("fsa-write error, ino:{} off:{} size:{} err:{}", ino, off, size, e.what());
+    fuse_reply_err(req, EIO);
+    return;
+  }
 }
 
 void FuseAdapter::flush(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {

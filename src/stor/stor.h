@@ -63,6 +63,15 @@ struct ReadFileResp {
   size_t bytes;
 };
 
+struct MInitReq {
+  string obj_key;
+};
+
+struct MInitResp {
+  uint64_t part_size;
+  string upload_id;
+};
+
 struct StorOpt {
   string bucket;
   string public_key;
@@ -77,6 +86,7 @@ class Stor {
   virtual void put_file(PutFileReq &req, PutFileResp &resp) = 0;
   virtual void read_file(ReadFileReq &req, ReadFileResp &resp) = 0;
   virtual void delete_file(DeleteFileReq &req, DeleteFileResp &resp) = 0;
+  virtual void minit(MInitReq &req, MInitResp &resp) = 0;
 };
 }  // namespace stor
 }  // namespace catfs

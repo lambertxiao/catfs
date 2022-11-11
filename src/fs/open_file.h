@@ -28,7 +28,7 @@ class OpenFile {
   types::HandleID hno;
 
   FReader *reader;
-  FWriter writer;
+  FWriter *writer;
 
   OpenFile(types::InodeID ino, types::HandleID hno) {
     this->ino = ino;
@@ -38,6 +38,7 @@ class OpenFile {
   ~OpenFile() { free(reader); }
 
   int read(off_t off, size_t size, char *buf);
+  int write(off_t off, size_t size, const char *buf);
 };
 }  // namespace fs
 }  // namespace catfs

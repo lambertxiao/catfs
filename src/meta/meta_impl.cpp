@@ -51,13 +51,12 @@ Dentry *MetaImpl::find_dentry(InodeID pino, const std::string &name, bool onlyLo
     }
 
     // 举个例子，如果当前ls的目录为a/b，但服务端存在以a/b/*为前缀的key，需要将a/b的目录在本地创建出来
-    auto prefix = parent->get_full_path_with_slash() + name;
+    auto prefix = parent->get_full_path_with_slash() + name + "/";
     auto exist = is_remote_dir_exist(prefix);
     if (!exist) return NULL;
 
     // add virtual dir in local
-    dentry = parent->add_child(
-        name, local_meta->create_new_inode(parent->inode->mode, parent->inode->gid, parent->inode->uid));
+    dentry = local_meta->create_dentry(parent->inode->ino, name, local_meta->create_new_inode(parent->inode->mode, parent->inode->gid, parent->inode->uid));
     dentry->inc_ttl(opt.dcache_timeout);
     return dentry;
   } else {

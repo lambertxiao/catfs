@@ -2,9 +2,15 @@
 
 namespace catfs {
 namespace fs {
+
 int OpenFile::read(off_t off, size_t size, char *buf) {
   // todo 提前判断文件大小，off等条件
   return reader->read(off, size, buf);
 }
+
+int OpenFile::write(off_t off, size_t size, const char *buf) {
+  return writer->write(off, size, buf);
+}
+
 }  // namespace fs
 }  // namespace catfs

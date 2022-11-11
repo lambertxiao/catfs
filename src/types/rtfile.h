@@ -5,7 +5,7 @@
 
 namespace catfs {
 namespace types {
-// runtime file，记录正常读写的文件
+// runtime file，记录正在读写的文件
 class RTFile {
  public:
   std::string path;

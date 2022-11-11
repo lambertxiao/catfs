@@ -50,6 +50,7 @@ class CatFS {
   const Dentry *create_dentry(InodeID parent, std::string name, mode_t mode);
   void remove_dentry(InodeID parent, std::string name);
   int readfile(HandleID hno, off_t off, size_t size, char *buf);
+  int writefile(HandleID hno, off_t off, size_t size, const char *buf);
   HandleID opendir(InodeID ino);
   HandleID openfile(InodeID ino, int flags);
   std::vector<Dirent> read_dir(HandleID hno, off_t off, size_t size);
