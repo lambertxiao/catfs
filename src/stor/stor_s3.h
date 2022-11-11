@@ -38,6 +38,7 @@ class S3Stor : public Stor {
   virtual void put_file(PutFileReq &req, PutFileResp &resp) override;
   virtual void read_file(ReadFileReq &req, ReadFileResp &resp) override;
   virtual void delete_file(DeleteFileReq &req, DeleteFileResp &resp) override;
+  virtual void mput(MPutReq &req, MPutResp &resp) override;
 };
 }  // namespace stor
 }  // namespace catfs

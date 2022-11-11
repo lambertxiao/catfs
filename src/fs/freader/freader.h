@@ -11,6 +11,7 @@ class FReader {
 
  public:
   virtual int read(off_t off, size_t size, char *dst) = 0;
+  virtual void release() = 0;
 
   void set_stor(std::shared_ptr<stor::Stor> stor) { this->stor = stor; }
 };

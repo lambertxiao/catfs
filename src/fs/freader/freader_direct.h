@@ -17,6 +17,7 @@ class DirectReader : public FReader {
   DirectReader(std::shared_ptr<types::RTFile> file) { this->file = file; };
 
   int read(off_t off, size_t size, char *dst) override;
+  void release() override;
 };
 }  // namespace fs
 }  // namespace catfs

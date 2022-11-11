@@ -52,7 +52,7 @@ types::Inode *LocalMemMeta::get_inode(types::InodeID ino) {
   return dentry->inode;
 }
 
-Inode *LocalMemMeta::update_inode(InodeID ino, InodeUpdateAttr updater, bool sync) {
+Inode *LocalMemMeta::update_inode(InodeID ino, InodeUpdateAttr &updater, bool sync) {
   auto inode = get_inode(ino);
   if (inode == NULL) {
     throw types::InvalidInodeID(ino);

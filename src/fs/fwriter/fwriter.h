@@ -11,6 +11,9 @@ class FWriter {
   std::shared_ptr<stor::Stor> stor;
  public:
   virtual int write(off_t off, size_t size, const char *data) = 0;
+  virtual void release() = 0;
+  
+  virtual uint64_t file_size() = 0;
   void set_stor(std::shared_ptr<stor::Stor> stor) { this->stor = stor; }
 };
 

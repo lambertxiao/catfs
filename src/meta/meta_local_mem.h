@@ -38,7 +38,7 @@ class LocalMemMeta : public LocalMeta {
   void clear_unsync_dentry(Dentry &parent);
 
   Inode *get_inode(InodeID ino) override;
-  Inode *update_inode(InodeID ino, InodeUpdateAttr updater, bool sync) override;
+  Inode *update_inode(InodeID ino, InodeUpdateAttr &updater, bool sync) override;
   void remove_inode(InodeID ino) override;
   Dentry *get_dentry(InodeID ino) override;
   Dentry *create_dentry(InodeID pino, std::string name, Inode *inode) override;

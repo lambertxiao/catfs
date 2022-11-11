@@ -226,5 +226,11 @@ void MetaImpl::refresh_sub_dentries(Dentry &dentry, bool recursive) {
 
   local_meta->clear_unsync_dentry(dentry);
 }
+
+void MetaImpl::update_inode_size(InodeID ino, uint64_t size, bool sync) {
+  auto update = InodeUpdateAttr{size: &size};
+  local_meta->update_inode(ino, update, sync);
+}
+
 }  // namespace meta
 }  // namespace catfs

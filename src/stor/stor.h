@@ -72,6 +72,17 @@ struct MInitResp {
   string upload_id;
 };
 
+struct MPutReq {
+  string upload_id;
+  int part_num;
+  char* data;
+  size_t size;
+};
+
+struct MPutResp {
+
+};
+
 struct StorOpt {
   string bucket;
   string public_key;
@@ -87,6 +98,7 @@ class Stor {
   virtual void read_file(ReadFileReq &req, ReadFileResp &resp) = 0;
   virtual void delete_file(DeleteFileReq &req, DeleteFileResp &resp) = 0;
   virtual void minit(MInitReq &req, MInitResp &resp) = 0;
+  virtual void mput(MPutReq &req, MPutResp &resp) = 0;
 };
 }  // namespace stor
 }  // namespace catfs

@@ -5,75 +5,49 @@
 #include <mutex>
 #include <string.h>
 #include "fs/fwriter/fwriter.h"
+#include "fs/fwriter/fwriter_seq_part.h"
 #include "types/rtfile.h"
 #include "types/handle.h"
 
 namespace catfs {
 namespace fs {
 
-class Part {
-  public:
-  char* buf;
-  size_t size;
-  int woff;
-
-  Part(size_t size) {
-    buf = (char*)malloc(size*sizeof(char));
-  }
-  ~Part() {
-    free(buf);
-  }
-
-  uint64_t len() {
-    return woff;
-  }
-
-  uint64_t cap() {
-    return size - woff;
-  }
-
-  bool full() {
-    return size == woff;
-  }
-
-  int write(const char* data, size_t size) {
-    memcpy(buf + woff, data, size);
-    woff += size;
-    return size;
-  }
-
-  uint64_t copy(Part *src, off_t off, size_t size) {
-    return write(src->buf + off, size);
-  }
-
-  void clear() {
-    woff = 0;
-  }
-};
-
 // 上传类型，小文件或大文件
 enum UpType {
-  SMALL, BIG
+  PUT, MPUT
 };
 
-const static uint64_t MB_4 = 4 * 1024 * 1024;
+const static uint64_t MB_8 = 8 * 1024 * 1024;
+
+struct MPUTCtx {
+  string upload_id;
+  int part_num;
+};
 
 class SequenceWriter : public FWriter {
  private:
   std::shared_ptr<types::RTFile> file;
   std::mutex flock;
   types::HandleID hno;
-  Part *part_small = NULL;
-  Part *part_big = NULL;
-  UpType uptype = SMALL;
+  Part *put_part = NULL;
+  Part *mput_part = NULL;
+  MPUTCtx mput_ctx;
+
+  UpType uptype = PUT;
   bool is_writing;
   off_t next_write_offset;
 
  public:
   SequenceWriter(std::shared_ptr<types::RTFile> file) { this->file = file; };
+  
   int write(off_t off, size_t size, const char *dst) override;
-  void switch_bigup_mode();
-  void big_upload(Part *part, bool islast);
+  void write_data(const char *data, size_t size);
+  void release() override;
+
+  uint64_t file_size() override;
+
+  void switch_mput_mode();
+  void upload_part(Part *part, bool islast);
 };
 
 }  // namespace fs

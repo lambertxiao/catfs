@@ -241,6 +241,7 @@ void FuseAdapter::flush(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *f
 
 void FuseAdapter::release(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
   logi("fsa-release ino:{}", ino);
+  catfs->release_file(fi->fh);
   fuse_reply_err(req, 0);
 }
 

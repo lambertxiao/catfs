@@ -35,6 +35,8 @@ FUSE-based file system backed by Amazon S3, UCloud S3
     - [ ] 软链
     - [ ] 硬链
 
+- [ ] 读写并发控制
+
 ## 架构图
 
 ## 开发环境配置

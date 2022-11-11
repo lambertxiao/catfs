@@ -9,6 +9,7 @@
 #include "aws/s3/model/HeadObjectRequest.h"
 #include "aws/s3/model/ListObjectsRequest.h"
 #include "aws/s3/model/PutObjectRequest.h"
+#include "aws/s3/model/UploadPartRequest.h"
 
 #include "stor/stor.h"
 #include "stor/stor_s3.h"
@@ -137,5 +138,24 @@ void S3Stor::read_file(ReadFileReq &req, ReadFileResp &resp) {
   get_resp.GetResult().GetBody().read(resp.dst, content_length);
   resp.bytes = content_length;
 }
+
+void S3Stor::mput(MPutReq &req, MPutResp &resp) {
+  auto mput_req = Model::UploadPartRequest();
+  mput_req.SetBucket(opt.bucket);
+  mput_req.SetUploadId(req.upload_id);
+  mput_req.SetPartNumber(req.part_num);
+
+  auto inputData = Aws::MakeShared<Aws::StringStream>("");
+  inputData->write(req.data, req.size);
+  mput_req.SetBody(inputData);
+
+  auto mput_resp = s3_client->UploadPart(mput_req);
+  if (!mput_resp.IsSuccess()) {
+    auto err_msg = mput_resp.GetError().GetMessage();
+    loge("s3stor mput error:{}", err_msg);
+    throw types::ERR_SERVER_ERROR(err_msg);
+  }
+}
+
 }  // namespace stor
 }  // namespace catfs
