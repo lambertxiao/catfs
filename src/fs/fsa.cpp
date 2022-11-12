@@ -310,23 +310,27 @@ void FuseAdapter::readdir(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off
 
   try {
     auto dirents = catfs->read_dir(fi->fh, off, size);
-    char *p;
-    char *buf;
-
     size_t rem = size;
-    int idx = 0;
-    buf = (char *)calloc(1, size);
-    p = buf;
 
+    char *buf = (char *)calloc(1, size);
+    char *p = buf;
+
+    int idx = 0;
     for (auto &d : dirents) {
       if (d.name == "." || d.name == "..") continue;
 
       struct stat st = {
-          .st_ino = d.inode->ino,
-          .st_mode = d.inode->mode,
+        .st_ino = d.inode->ino,
+        .st_mode = d.inode->mode,
       };
-      size_t entsize = fuse_add_direntry(req, p, rem, d.name.c_str(), &st, off + idx);
+
+      size_t entsize = fuse_add_direntry(req, p, rem, d.name.c_str(), &st, off + idx + 1);
       idx++;
+
+      if (entsize > rem) {
+        break;
+      }
+
       p += entsize;
       rem -= entsize;
     }
@@ -344,18 +348,20 @@ void FuseAdapter::readdirplus(fuse_req_t req, fuse_ino_t ino, size_t size, off_t
   try {
     auto dirents = catfs->read_dir(fi->fh, off, size);
 
-    char *p;
-    char *buf;
+    char *buf = (char *)calloc(1, size);
+    char *p = buf;
     size_t rem = size;
-    int idx = 0;
-    buf = (char *)calloc(1, size);
-    p = buf;
 
+    int idx = 0;
     for (auto &d : dirents) {
       struct fuse_entry_param e;
       fill_fuse_entry_param(e, *d.inode);
-      size_t entsize = fuse_add_direntry_plus(req, p, rem, d.name.c_str(), &e, off + idx);
+      size_t entsize = fuse_add_direntry_plus(req, p, rem, d.name.c_str(), &e, off + idx + 1);
       idx++;
+
+      if (entsize > rem) {
+        break;
+      }
 
       p += entsize;
       rem -= entsize;
