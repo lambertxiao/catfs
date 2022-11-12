@@ -203,10 +203,13 @@ void LocalMemMeta::build_dentries(InodeID pino, types::FTreeNode &root) {
     for (auto &[_, child] : children) {
       auto child_dentry = parent->get_child(child.name);
 
-      if (child_dentry == NULL)
+      if (child_dentry == NULL) {
+        logd("dentry add child, name:{}, is_dir:{}", child.name, child.is_dir);
         child_dentry = create_dentry_from_obj(parent->inode->ino, child.name, child.oinfo, child.is_dir);
-      else
+      }
+      else {
         child_dentry->update(child.oinfo.size, child.oinfo.ctime, child.oinfo.mtime);
+      }
 
       if (child.is_dir) build(child_dentry, child.children);
 

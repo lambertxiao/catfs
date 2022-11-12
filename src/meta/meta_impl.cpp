@@ -197,8 +197,9 @@ void MetaImpl::build_ftree_from_listobjects(std::string &req_prefix, stor::ListO
   }
 
   for (auto &obj : resp.objs) {
-    auto file_node = types::FTreeNode{name : obj.name, oinfo : obj};
-    root.children[obj.name] = file_node;
+    auto filename = obj.name.substr(req_prefix.size(), obj.name.size() - req_prefix.size());
+    auto file_node = types::FTreeNode{name : filename, oinfo : obj};
+    root.children[filename] = file_node;
   }
 };
 
