@@ -16,8 +16,8 @@ namespace catfs {
 namespace fs {
 class OpenFile {
  private:
-  bool is_writing;
-  std::atomic<int32_t> first_write;
+  bool is_writing = false;
+  std::atomic<int32_t> first_write = 0;
   std::condition_variable writeDoneCond;  // 用来通知读端写入已经结束
   std::shared_ptr<stor::Stor> stor;
 
@@ -43,8 +43,8 @@ class OpenFile {
     free(writer);
   }
 
-  int read(off_t off, size_t size, char *buf);
-  int write(off_t off, size_t size, const char *buf);
+  int read(uint64_t off, uint64_t size, char *buf);
+  int write(uint64_t off, uint64_t size, const char *buf);
   void release();
 };
 }  // namespace fs

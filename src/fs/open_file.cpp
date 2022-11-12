@@ -5,7 +5,7 @@
 namespace catfs {
 namespace fs {
 
-int OpenFile::read(off_t off, size_t size, char *buf) {
+int OpenFile::read(uint64_t off, uint64_t size, char *buf) {
   if (off >= rtfile->size) {
     loge("fpath:{} read offset exceed file size, off:{}, fsize:{}", rtfile->path, off, rtfile->size);
     return 0;
@@ -22,7 +22,7 @@ int OpenFile::read(off_t off, size_t size, char *buf) {
   return reader->read(off, size, buf);
 }
 
-int OpenFile::write(off_t off, size_t size, const char *buf) {
+int OpenFile::write(uint64_t off, uint64_t size, const char *buf) {
   if (first_write.load() == 0) {
     int expect = 0;
     if (first_write.compare_exchange_strong(expect, 1)) {

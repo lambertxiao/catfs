@@ -8,7 +8,7 @@
 namespace catfs {
 namespace fs {
 
-int SequenceWriter::write(off_t off, size_t size, const char *data) {
+int SequenceWriter::write(uint64_t off, uint64_t size, const char *data) {
   std::lock_guard lock(flock);
 
   if (next_write_offset != off) {
@@ -23,7 +23,7 @@ int SequenceWriter::write(off_t off, size_t size, const char *data) {
   return size;
 };
 
-void SequenceWriter::write_data(const char *data, size_t size) {
+void SequenceWriter::write_data(const char *data, uint64_t size) {
   uint64_t wbytes = 0;
   uint64_t total = size;
 
@@ -112,6 +112,7 @@ void SequenceWriter::upload_part(Part *part, bool islast) {
   mput_ctx.part_num++;
 
   auto mput_req = stor::MPutReq{
+    obj_key: file->path,
     upload_id: mput_ctx.upload_id,
     part_num: part_num,
     data: part->buf,
@@ -122,8 +123,61 @@ void SequenceWriter::upload_part(Part *part, bool islast) {
   stor->mput(mput_req, mput_resp);
 }
 
+uint64_t SequenceWriter::file_size() {
+  return next_write_offset;
+}
+
 void SequenceWriter::release() {
   std::lock_guard lock(flock);
+
+  finish_write();
+}
+
+void SequenceWriter::finish_write() {
+  if (next_write_offset == 0) {
+    return;
+  }
+
+  switch (uptype)
+  {
+  case PUT:
+    upload_file();
+    break;
+  case MPUT:
+    finish_mput();
+    break;
+  }
+}
+
+void SequenceWriter::upload_file() {
+  if (put_part == NULL) {
+    return;
+  }
+
+  auto req = stor::PutFileReq{
+    obj_key: file->path,
+    buf: put_part->buf,
+    size: put_part->len(),
+  };
+  auto resp = stor::PutFileResp{};
+  stor->put_file(req, resp);
+}
+
+void SequenceWriter::finish_mput() {
+  if (mput_part != NULL) {
+    if (mput_part->len() > 0) {
+      upload_part(mput_part, true);
+      free(mput_part);
+      mput_part = NULL;
+    }
+  }
+
+  auto req = stor::MFinishReq{
+    obj_key: file->path,
+    upload_id: mput_ctx.upload_id,
+  };
+  auto resp = stor::MFinishResp{};
+  stor->mfinish(req, resp);
 }
 
 }  // namespace fs

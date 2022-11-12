@@ -35,19 +35,22 @@ class SequenceWriter : public FWriter {
 
   UpType uptype = PUT;
   bool is_writing;
-  off_t next_write_offset;
+  uint64_t next_write_offset = 0;
 
  public:
   SequenceWriter(std::shared_ptr<types::RTFile> file) { this->file = file; };
   
-  int write(off_t off, size_t size, const char *dst) override;
-  void write_data(const char *data, size_t size);
+  int write(uint64_t off, uint64_t size, const char *dst) override;
+  void write_data(const char *data, uint64_t size);
   void release() override;
 
   uint64_t file_size() override;
 
   void switch_mput_mode();
   void upload_part(Part *part, bool islast);
+  void finish_write();
+  void upload_file();
+  void finish_mput();
 };
 
 }  // namespace fs

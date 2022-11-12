@@ -9,26 +9,34 @@ namespace fs {
 
 class Part {
  public:
-  char* buf;
-  size_t size;
-  off_t woff;
+  char* buf = NULL;
+  uint64_t part_size;
+  uint64_t woff;
 
-  Part(size_t size) { buf = (char*)malloc(size * sizeof(char)); }
+  Part(uint64_t size) { 
+    buf = (char*)malloc(size * sizeof(char)); 
+    part_size = size;
+    woff = 0;
+  }
+
   ~Part() { free(buf); }
 
   uint64_t len() { return woff; }
 
-  uint64_t cap() { return size - woff; }
+  uint64_t cap() { return part_size - woff; }
 
-  bool full() { return size == woff; }
+  bool full() { return part_size == woff; }
 
-  int write(const char* data, size_t size) {
+  int write(const char* data, uint64_t size) {
+    if (woff == part_size) {
+      return 0;
+    }
     memcpy(buf + woff, data, size);
     woff += size;
     return size;
   }
 
-  uint64_t copy(Part* src, off_t off, size_t size) { return write(src->buf + off, size); }
+  uint64_t copy(Part* src, uint64_t off, uint64_t size) { return write(src->buf + off, size); }
 
   void clear() { woff = 0; }
 };

@@ -10,7 +10,7 @@ class FWriter {
  protected:
   std::shared_ptr<stor::Stor> stor;
  public:
-  virtual int write(off_t off, size_t size, const char *data) = 0;
+  virtual int write(uint64_t off, uint64_t size, const char *data) = 0;
   virtual void release() = 0;
   
   virtual uint64_t file_size() = 0;

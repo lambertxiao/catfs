@@ -1,10 +1,12 @@
+#include "fs/fsa.h"
+
 #include <fmt/core.h>
+
 #include <functional>
 #include <iostream>
-#include "fmtlog/fmtlog.h"
 
+#include "fmtlog/fmtlog.h"
 #include "fs/fs.h"
-#include "fs/fsa.h"
 #include "fs/fuse.h"
 #include "types/inode.h"
 
@@ -31,7 +33,9 @@ void FuseAdapter::statfs(fuse_req_t req, fuse_ino_t ino) {
   fuse_reply_statfs(req, &stbuf);
 }
 
-void FuseAdapter::init(void *userdata, struct fuse_conn_info *conn) { logi("fsa-init"); }
+void FuseAdapter::init(void *userdata, struct fuse_conn_info *conn) {
+  logi("fsa-init");
+}
 
 void FuseAdapter::destroy(void *userdata) {
   logi("fsa-destroy");
@@ -149,6 +153,7 @@ void FuseAdapter::rmdir(fuse_req_t req, fuse_ino_t parent, const char *name) {
   logi("fsa-rmdir pino:{} name:{}", parent, name);
   try {
     catfs->remove_dentry(parent, name);
+    fuse_reply_err(req, 0);
   } catch (types::ERR_ENOTEMPTY &e) {
     loge("rmdir error, pino:{} name:{} err:{}", parent, name, e.what());
     fuse_reply_err(req, ENOTEMPTY);
@@ -195,9 +200,14 @@ void FuseAdapter::create(fuse_req_t req, fuse_ino_t parent, const char *name, mo
       return;
     }
 
+    auto ino = dentry->inode->ino;
+    auto hno = catfs->openfile(ino, fi->flags);
+    fi->fh = hno;
+
     struct fuse_entry_param e;
     fill_fuse_entry_param(e, *dentry->inode);
     fuse_reply_create(req, &e, fi);
+    logi("fsa-create-done pino:{} name:{} ino:{} hno:{}", parent, name, ino, hno);
     return;
   } catch (std::exception &e) {
     loge("fsa-create error, pino:{} name:{} err:{}", parent, name, e.what());
@@ -224,13 +234,34 @@ void FuseAdapter::read(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, s
 void FuseAdapter::write(fuse_req_t req, fuse_ino_t ino, const char *buf, size_t size, off_t off,
                         struct fuse_file_info *fi) {
   logi("fsa-write ino:{} off:{} size:{}", ino, off, size);
-   try {
+  try {
     int n = catfs->writefile(fi->fh, off, size, buf);
     fuse_reply_write(req, n);
   } catch (const std::exception &e) {
     loge("fsa-write error, ino:{} off:{} size:{} err:{}", ino, off, size, e.what());
     fuse_reply_err(req, EIO);
     return;
+  }
+}
+
+void FuseAdapter::write_buf(fuse_req_t req, fuse_ino_t ino, struct fuse_bufvec *in_buf, off_t off,
+                            struct fuse_file_info *fi) {
+  // logd("fsa-write_buf ino:{} off:{} size:{}", ino, off, in_buf->count);
+
+  try {
+    uint64_t res = 0;
+    uint64_t offset = off;
+    for (auto buf : in_buf->buf) {
+      logd("fsa-write_buf hno:{} ino:{} off:{} size:{}", fi->fh, ino, offset, buf.size);
+      int n = catfs->writefile(fi->fh, offset, buf.size, (char *)buf.mem);
+      offset += n;
+      res += n;
+    }
+
+    fuse_reply_write(req, res);
+  } catch (const std::exception &e) {
+    loge("fsa-write_buf error, ino:{} err:{}", ino, e.what());
+    fuse_reply_err(req, EIO);
   }
 }
 
@@ -241,8 +272,16 @@ void FuseAdapter::flush(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *f
 
 void FuseAdapter::release(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi) {
   logi("fsa-release ino:{}", ino);
-  catfs->release_file(fi->fh);
-  fuse_reply_err(req, 0);
+
+  try {
+    catfs->release_file(fi->fh);
+    fuse_reply_err(req, 0);
+  } catch (const std::exception &e) {
+    loge("fsa-release error, ino:{} err:{}", ino, e.what());
+    fuse_reply_err(req, EIO);
+  }
+
+  logi("fsa-release-done:{}", ino);
 }
 
 void FuseAdapter::fsync(fuse_req_t req, fuse_ino_t ino, int datasync, struct fuse_file_info *fi) {
@@ -389,11 +428,7 @@ void FuseAdapter::poll(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi
   std::cout << "fsa-poll" << std::endl;
   fuse_reply_err(req, ENOSYS);
 }
-void FuseAdapter::write_buf(fuse_req_t req, fuse_ino_t ino, struct fuse_bufvec *bufv, off_t off,
-                            struct fuse_file_info *fi) {
-  std::cout << "fsa-write_buf" << std::endl;
-  fuse_reply_err(req, ENOSYS);
-}
+
 void FuseAdapter::retrieve_reply(fuse_req_t req, void *cookie, fuse_ino_t ino, off_t offset, struct fuse_bufvec *bufv) {
   std::cout << "fsa-retrieve_reply" << std::endl;
   fuse_reply_err(req, ENOSYS);

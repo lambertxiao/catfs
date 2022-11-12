@@ -3,7 +3,7 @@
 
 namespace catfs {
 namespace fs {
-int DirectReader::read(off_t off, size_t size, char *dst) {
+int DirectReader::read(uint64_t off, uint64_t size, char *dst) {
   auto req = stor::ReadFileReq{
     obj_key : file->path,
     off : off,

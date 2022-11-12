@@ -182,6 +182,8 @@ Inode *LocalMemMeta::create_new_inode(mode_t mode, uint32_t gid, uint32_t uid) {
   inode->mode = mode;
   inode->gid = gid;
   inode->uid = uid;
+  inode->ctime = util::now();
+  inode->mtime = util::now();
 
   return inode;
 }

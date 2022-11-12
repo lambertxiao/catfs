@@ -21,10 +21,13 @@ void MetaImpl::get_remote_obj(Dentry &parent, const std::string &name, types::Ob
 
   auto req = stor::HeadFileReq{obj_key : fullpath};
   stor->head_file(req, resp);
+
   if (!resp.exist) {
     auto req = stor::HeadFileReq{obj_key : fullpath + "/"};
     stor->head_file(req, resp);
-    is_dir = true;
+    if (resp.exist) {
+      is_dir = true;
+    }
   }
 
   exist = resp.exist;
@@ -40,8 +43,8 @@ Dentry *MetaImpl::find_dentry(InodeID pino, const std::string &name, bool onlyLo
     if (parent == NULL) throw types::InvalidInodeID(pino);
 
     types::ObjInfo obj;
-    bool obj_exist;
-    bool is_dir;
+    bool obj_exist = false;
+    bool is_dir = false;
     get_remote_obj(*parent, name, obj, obj_exist, is_dir);
 
     if (obj_exist) {
