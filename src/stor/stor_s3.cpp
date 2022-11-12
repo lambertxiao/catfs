@@ -9,6 +9,9 @@
 #include "aws/s3/model/HeadObjectRequest.h"
 #include "aws/s3/model/ListObjectsRequest.h"
 #include "aws/s3/model/PutObjectRequest.h"
+#include "aws/s3/model/UploadPartRequest.h"
+#include "aws/s3/model/CreateMultipartUploadRequest.h"
+#include "aws/s3/model/CompleteMultipartUploadRequest.h"
 
 #include "stor/stor.h"
 #include "stor/stor_s3.h"
@@ -137,5 +140,60 @@ void S3Stor::read_file(ReadFileReq &req, ReadFileResp &resp) {
   get_resp.GetResult().GetBody().read(resp.dst, content_length);
   resp.bytes = content_length;
 }
+
+void S3Stor::minit(MInitReq &req, MInitResp &resp) {
+  auto minit_req = Model::CreateMultipartUploadRequest();
+  minit_req.SetBucket(opt.bucket);
+  minit_req.SetKey(req.obj_key);
+
+  auto minit_resp = s3_client->CreateMultipartUpload(minit_req);
+  if (!minit_resp.IsSuccess()) {
+    auto err_msg = minit_resp.GetError().GetMessage();
+    loge("s3stor minit error:{}", err_msg);
+    throw types::ERR_SERVER_ERROR(err_msg);
+  }
+
+  resp.upload_id = minit_resp.GetResult().GetUploadId();
+  resp.part_size = 8 * 1024 * 1024;
+
+  logi("s3stor minit fpath:{}, upload_id:{}", req.obj_key, resp.upload_id);
+}
+
+void S3Stor::mput(MPutReq &req, MPutResp &resp) {
+  logi("s3stor mput fpath:{}, part_num:{}", req.obj_key, req.part_num+1);
+  auto mput_req = Model::UploadPartRequest();
+  mput_req.SetBucket(opt.bucket);
+  mput_req.SetKey(req.obj_key);
+  mput_req.SetUploadId(req.upload_id);
+  mput_req.SetPartNumber(req.part_num+1);
+
+  auto inputData = Aws::MakeShared<Aws::StringStream>("");
+  inputData->write(req.data, req.size);
+  mput_req.SetBody(inputData);
+
+  auto mput_resp = s3_client->UploadPart(mput_req);
+  if (!mput_resp.IsSuccess()) {
+    auto err_msg = mput_resp.GetError().GetMessage();
+    loge("s3stor mput error:{}", err_msg);
+    throw types::ERR_SERVER_ERROR(err_msg);
+  }
+}
+
+void S3Stor::mfinish(MFinishReq &req, MFinishResp &resp) {
+  logi("s3stor mfinish fpath:{}, upload_id:{}", req.obj_key, req.upload_id);
+
+  auto mfinish_req = Model::CompleteMultipartUploadRequest();
+  mfinish_req.SetBucket(opt.bucket);
+  mfinish_req.SetKey(req.obj_key);
+  mfinish_req.SetUploadId(req.upload_id);
+
+  auto mfinish_resp = s3_client->CompleteMultipartUpload(mfinish_req);
+  if (!mfinish_resp.IsSuccess()) {
+    auto err_msg = mfinish_resp.GetError().GetMessage();
+    loge("s3stor mfinish error:{}", err_msg);
+    throw types::ERR_SERVER_ERROR(err_msg);
+  }
+}
+
 }  // namespace stor
 }  // namespace catfs

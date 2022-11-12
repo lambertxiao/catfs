@@ -36,6 +36,7 @@ class MetaImpl : public Meta {
   void remove_dentry(InodeID pino, const std::string &name) override;
   Dentry *get_dentry(InodeID ino) override;
   void load_sub_dentries(InodeID ino, std::vector<types::Dirent> &dirents) override;
+  void update_inode_size(InodeID ino, uint64_t size, bool sync) override;
 
   void get_remote_obj(Dentry &parent, const std::string &name, types::ObjInfo &obj, bool &exist, bool &is_dir);
   bool is_remote_dir_exist(const std::string &path);

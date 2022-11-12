@@ -23,13 +23,15 @@ class Dentry {
   Dentry *parent = NULL;
   Inode *inode = NULL;
   timespec ttl;
-  uint32_t flags;
-  bool synced;
+  uint32_t flags = 0;
+  bool synced = false;
   std::unordered_map<std::string, Dentry *> children;
 
   Dentry(std::string name, Inode *inode) {
     this->name = name;
     this->inode = inode;
+    ttl.tv_sec = 0;
+    ttl.tv_nsec = 0;
   }
 
   ~Dentry() {

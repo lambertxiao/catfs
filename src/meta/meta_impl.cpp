@@ -21,10 +21,13 @@ void MetaImpl::get_remote_obj(Dentry &parent, const std::string &name, types::Ob
 
   auto req = stor::HeadFileReq{obj_key : fullpath};
   stor->head_file(req, resp);
+
   if (!resp.exist) {
     auto req = stor::HeadFileReq{obj_key : fullpath + "/"};
     stor->head_file(req, resp);
-    is_dir = true;
+    if (resp.exist) {
+      is_dir = true;
+    }
   }
 
   exist = resp.exist;
@@ -40,8 +43,8 @@ Dentry *MetaImpl::find_dentry(InodeID pino, const std::string &name, bool onlyLo
     if (parent == NULL) throw types::InvalidInodeID(pino);
 
     types::ObjInfo obj;
-    bool obj_exist;
-    bool is_dir;
+    bool obj_exist = false;
+    bool is_dir = false;
     get_remote_obj(*parent, name, obj, obj_exist, is_dir);
 
     if (obj_exist) {
@@ -51,13 +54,12 @@ Dentry *MetaImpl::find_dentry(InodeID pino, const std::string &name, bool onlyLo
     }
 
     // 举个例子，如果当前ls的目录为a/b，但服务端存在以a/b/*为前缀的key，需要将a/b的目录在本地创建出来
-    auto prefix = parent->get_full_path_with_slash() + name;
+    auto prefix = parent->get_full_path_with_slash() + name + "/";
     auto exist = is_remote_dir_exist(prefix);
     if (!exist) return NULL;
 
     // add virtual dir in local
-    dentry = parent->add_child(
-        name, local_meta->create_new_inode(parent->inode->mode, parent->inode->gid, parent->inode->uid));
+    dentry = local_meta->create_dentry(parent->inode->ino, name, local_meta->create_new_inode(parent->inode->mode, parent->inode->gid, parent->inode->uid));
     dentry->inc_ttl(opt.dcache_timeout);
     return dentry;
   } else {
@@ -195,8 +197,9 @@ void MetaImpl::build_ftree_from_listobjects(std::string &req_prefix, stor::ListO
   }
 
   for (auto &obj : resp.objs) {
-    auto file_node = types::FTreeNode{name : obj.name, oinfo : obj};
-    root.children[obj.name] = file_node;
+    auto filename = obj.name.substr(req_prefix.size(), obj.name.size() - req_prefix.size());
+    auto file_node = types::FTreeNode{name : filename, oinfo : obj};
+    root.children[filename] = file_node;
   }
 };
 
@@ -227,5 +230,11 @@ void MetaImpl::refresh_sub_dentries(Dentry &dentry, bool recursive) {
 
   local_meta->clear_unsync_dentry(dentry);
 }
+
+void MetaImpl::update_inode_size(InodeID ino, uint64_t size, bool sync) {
+  auto update = InodeUpdateAttr{size: &size};
+  local_meta->update_inode(ino, update, sync);
+}
+
 }  // namespace meta
 }  // namespace catfs

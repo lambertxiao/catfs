@@ -27,8 +27,6 @@ std::vector<Dirent> CatFS::read_dir(types::HandleID hno, off_t off, size_t size)
 
   if (open_dir->dentries.empty()) meta->load_sub_dentries(open_dir->ino, open_dir->dentries);
 
-  if (off != 0) off++;
-
   auto begin = open_dir->dentries.begin() + off;
   std::vector<Dirent> ret;
 

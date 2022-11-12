@@ -6,8 +6,9 @@ FUSE-based file system backed by Amazon S3, UCloud S3
 
 本项目还处于开发阶段，当前支持功能如下
 
-- [ ] 目录相关操作
+- [x] 目录相关操作
     - [x] mkdir
+    - [x] rmdir
     - [x] open_dir
     - [x] read_dir
     - [x] release_dir
@@ -18,8 +19,8 @@ FUSE-based file system backed by Amazon S3, UCloud S3
         - [x] direct read
         - [ ] read aheaed
         - [ ] read_after_write_done
-    - [ ] write
-        - [ ] 顺序写
+    - [x] write
+        - [x] 顺序写
         - [ ] 随机写
     - [ ] flush
         - [ ] sync_flush
@@ -27,7 +28,7 @@ FUSE-based file system backed by Amazon S3, UCloud S3
     - [x] release
 
 - [ ] meta
-    - [ ] 使用本地内存存meta
+    - [x] 使用本地内存存meta
     - [ ] 使用redis存meta
 
 - [ ] 链接支持
@@ -35,9 +36,51 @@ FUSE-based file system backed by Amazon S3, UCloud S3
     - [ ] 软链
     - [ ] 硬链
 
+- [ ] 读写并发控制
+
 ## 架构图
 
-## 开发环境配置
+待补充
+
+## 如何使用
+
+### 运行方式
+
+```
+usage: ./catfs --bucket=string --mount=string [options] ...
+options:
+  -b, --bucket              bucket name (string)
+  -m, --mount               mount point (string)
+      --bucket_prefix       bucket key prefix (string [=])
+      --public_key          public key (string [=])
+      --private_key         private key (string [=])
+      --endpoint            storage backend endpoint (string [=])
+      --stor_backend        specified storage backend (string [=s3])
+      --passwd              specify access file (string [=/etc/catfs/catfs.yaml])
+      --gid                 gid (unsigned int [=0])
+      --uid                 uid (unsigned int [=0])
+      --dcache_timeout      dentry cache timeout, unit is seconds (unsigned int [=300])
+      --retry               number of times to retry a failed I/O (unsigned int [=3])
+      --parallel            number of parallel I/O thread (unsigned int [=32])
+      --level               set log level: error/warn/info/debug (string [=info])
+      --log_dir             set log dir (string [=])
+  -f, --foreground          running in foreground
+      --singlethread        singlethread
+      --max_idle_threads    max_idle_threads (unsigned int [=4])
+  -?, --help                print this message
+```
+
+### 配置文件格式
+
+默认路径：/etc/catfs/catfs.yaml
+
+```yaml
+public_key: TOKEN_4b26930b-d888-44c4-8931-XXXXXXX
+private_key: 4955517f-ec32-4254-bebe-XXXXXXX
+endpoint: internal.s3-cn-sh2.ufileos.com
+```
+
+## 开发
 
 ### 下载源码
 

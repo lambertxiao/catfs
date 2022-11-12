@@ -24,7 +24,7 @@ struct InodeUpdateAttr {
 class LocalMeta {
  public:
   virtual Inode *get_inode(InodeID ino) = 0;
-  virtual Inode *update_inode(InodeID ino, InodeUpdateAttr updater, bool sync) = 0;
+  virtual Inode *update_inode(InodeID ino, InodeUpdateAttr &updater, bool sync) = 0;
   virtual void remove_inode(InodeID ino) = 0;
 
   virtual Dentry *get_dentry(InodeID ino) = 0;

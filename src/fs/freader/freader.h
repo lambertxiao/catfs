@@ -10,7 +10,8 @@ class FReader {
   std::shared_ptr<stor::Stor> stor;
 
  public:
-  virtual int read(off_t off, size_t size, char *dst) = 0;
+  virtual int read(uint64_t off, uint64_t size, char *dst) = 0;
+  virtual void release() = 0;
 
   void set_stor(std::shared_ptr<stor::Stor> stor) { this->stor = stor; }
 };

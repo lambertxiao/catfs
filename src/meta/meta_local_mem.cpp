@@ -52,7 +52,7 @@ types::Inode *LocalMemMeta::get_inode(types::InodeID ino) {
   return dentry->inode;
 }
 
-Inode *LocalMemMeta::update_inode(InodeID ino, InodeUpdateAttr updater, bool sync) {
+Inode *LocalMemMeta::update_inode(InodeID ino, InodeUpdateAttr &updater, bool sync) {
   auto inode = get_inode(ino);
   if (inode == NULL) {
     throw types::InvalidInodeID(ino);
@@ -182,6 +182,8 @@ Inode *LocalMemMeta::create_new_inode(mode_t mode, uint32_t gid, uint32_t uid) {
   inode->mode = mode;
   inode->gid = gid;
   inode->uid = uid;
+  inode->ctime = util::now();
+  inode->mtime = util::now();
 
   return inode;
 }
@@ -201,10 +203,13 @@ void LocalMemMeta::build_dentries(InodeID pino, types::FTreeNode &root) {
     for (auto &[_, child] : children) {
       auto child_dentry = parent->get_child(child.name);
 
-      if (child_dentry == NULL)
+      if (child_dentry == NULL) {
+        logd("dentry add child, name:{}, is_dir:{}", child.name, child.is_dir);
         child_dentry = create_dentry_from_obj(parent->inode->ino, child.name, child.oinfo, child.is_dir);
-      else
+      }
+      else {
         child_dentry->update(child.oinfo.size, child.oinfo.ctime, child.oinfo.mtime);
+      }
 
       if (child.is_dir) build(child_dentry, child.children);
 

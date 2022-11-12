@@ -38,7 +38,7 @@ struct ListObjectsResp {
 struct PutFileReq {
   string obj_key;
   char *buf = NULL;
-  size_t size;
+  uint64_t size;
   std::map<string, string> meta_data;
 };
 
@@ -54,14 +54,39 @@ struct DeleteFileResp {};
 
 struct ReadFileReq {
   string obj_key;
-  off_t off;
-  size_t size;
+  uint64_t off;
+  uint64_t size;
 };
 
 struct ReadFileResp {
   char *dst;
-  size_t bytes;
+  uint64_t bytes;
 };
+
+struct MInitReq {
+  string obj_key;
+};
+
+struct MInitResp {
+  uint64_t part_size;
+  string upload_id;
+};
+
+struct MPutReq {
+  string obj_key;
+  string upload_id;
+  int part_num;
+  char* data;
+  uint64_t size;
+};
+
+struct MPutResp {};
+
+struct MFinishReq {
+  string obj_key;
+  string upload_id;
+};
+struct MFinishResp {};
 
 struct StorOpt {
   string bucket;
@@ -77,6 +102,9 @@ class Stor {
   virtual void put_file(PutFileReq &req, PutFileResp &resp) = 0;
   virtual void read_file(ReadFileReq &req, ReadFileResp &resp) = 0;
   virtual void delete_file(DeleteFileReq &req, DeleteFileResp &resp) = 0;
+  virtual void minit(MInitReq &req, MInitResp &resp) = 0;
+  virtual void mput(MPutReq &req, MPutResp &resp) = 0;
+  virtual void mfinish(MFinishReq &req, MFinishResp &resp) = 0;
 };
 }  // namespace stor
 }  // namespace catfs

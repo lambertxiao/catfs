@@ -11,11 +11,12 @@ link_directories("/root/workspace/awslib/lib")
 
 aux_source_directory("${CODE_ROOT}/fs" FS)
 aux_source_directory("${CODE_ROOT}/fs/freader" FS_READER)
+aux_source_directory("${CODE_ROOT}/fs/fwriter" FS_WRITER)
 aux_source_directory("${CODE_ROOT}/meta" META)
 aux_source_directory("${CODE_ROOT}/stor" STORAGE)
 aux_source_directory("${CODE_ROOT}/types" TYPES)
 aux_source_directory("${CODE_ROOT}/util" UTIL)
-set(SRC_DIR ${FS} ${FS_READER} ${META} ${STORAGE} ${TYPES} ${UTIL})
+set(SRC_DIR ${FS} ${FS_READER} ${FS_WRITER} ${META} ${STORAGE} ${TYPES} ${UTIL})
 
 set(WARNING_FLAGS "-Wall")
 
