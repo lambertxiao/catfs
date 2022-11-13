@@ -1,46 +1,78 @@
 # catfs
 
-FUSE-based file system backed by Amazon S3, UCloud S3
+## 简介
 
-## 写在前面
+CATFS是一个能在linux环境中将一个对象存储的存储桶bucket挂载到本地目录的工具，建立挂载后，可以像操作本地文件系统一样操作存储桶中的文件。CATFS计划接入多种后端存储，优先S3, US3, OSS等对象存储。
 
-本项目还处于开发阶段，当前支持功能如下
+## 运行环境
 
-- [x] 目录相关操作
-    - [x] mkdir
-    - [x] rmdir
-    - [x] open_dir
-    - [x] read_dir
-    - [x] release_dir
+> catfs基于fuse实现，需要您的机器已安装了fuse，可通过执行 `modprobe fuse` 查看支持情况。
 
-- [ ] 文件相关操作
-    - [x] open
-    - [x] read
-        - [x] direct read
-        - [ ] read aheaed
-        - [ ] read_after_write_done
-    - [x] write
-        - [x] 顺序写
-        - [ ] 随机写
-    - [ ] flush
-        - [ ] sync_flush
-        - [ ] async_flush
-    - [x] release
+- Linux
 
-- [ ] meta
-    - [x] 使用本地内存存meta
-    - [ ] 使用redis存meta
+## 项目进度
 
-- [ ] 链接支持
+本项目还处于开发阶段，功能支持情况如下
 
-    - [ ] 软链
-    - [ ] 硬链
+| posix 接口 | 实现情况 |
+| - | - |
+| lookup | ✅ |
+| forget | ✅ |
+| getattr | ✅ |
+| setattr | ✅ |
+| readlink | |
+| mknod | ✅ |
+| mkdir | ✅ |
+| unlink | ✅ |
+| rmdir | ✅ |
+| symlink | |
+| rename | ✅ |
+| link | |
+| open | ✅ |
+| create | ✅ |
+| read | ✅ |
+| write | ✅ |
+| flush | ✅ |
+| release | ✅ |
+| fsync |  |
+| opendir | ✅ |
+| readdir | ✅ |
+| readdirplus | ✅ |
+| releasedir | ✅ |
+| fsyncdir |  |
+| setxattr |  |
+| getxattr |  |
+| listxattr |  |
+| removexattr | |
+| access | |
+| getlk |  |
+| setlk |  |
+| bmap |  |
+| poll |  |
+| write_buf | ✅ |
+| retrieve_reply | |
+| forget_multi | |
+| flock | |
+| fallocate | |
+| copy_file_range | |
+| lseek | |
+
+## 当前版本使用限制
+
+- 不支持随即写
+- 不支持追加写
+
+## todo list
 
 - [ ] 读写并发控制
+- [ ] 多线程写入
+- [ ] 元数据可以外置，支持多个client端共享元数据
+- [ ] 小文件追加写
+- [ ] 小文件随即写
 
 ## 架构图
 
-待补充
+![](https://lambert4.cn-bj.ufileos.com/struct.png)
 
 ## 如何使用
 
