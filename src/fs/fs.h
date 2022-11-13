@@ -24,10 +24,13 @@ using catfs::types::HandleID;
 using catfs::types::Inode;
 using catfs::types::InodeID;
 
-struct CatFsOpt {};
+struct CatFsOpt {
+  bool read_after_write_finish = false;
+};
 
 class CatFS {
  private:
+  CatFsOpt opt;
   std::shared_ptr<Meta> meta;
   std::shared_ptr<stor::Stor> stor;
   HandleID next_handle_id = 0;
@@ -36,9 +39,11 @@ class CatFS {
   std::shared_mutex open_file_lock;
   std::unordered_map<HandleID, OpenDir *> open_dirs;
   std::unordered_map<HandleID, OpenFile *> open_files;
+  std::unordered_map<InodeID, std::unordered_map<HandleID, OpenFile *>> ino_to_openfiles;
 
  public:
-  CatFS(std::shared_ptr<Meta> meta, std::shared_ptr<stor::Stor> stor) {
+  CatFS(CatFsOpt opt, std::shared_ptr<Meta> meta, std::shared_ptr<stor::Stor> stor) {
+    this->opt = opt;
     this->meta = meta;
     this->stor = stor;
   }

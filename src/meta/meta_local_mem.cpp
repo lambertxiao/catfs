@@ -37,13 +37,13 @@ void LocalMemMeta::save_dentry_index(types::Dentry *d) {
   auto ino = d->inode->ino;
   wlock_dentry_idx
 
-      dentry_index[ino % LOCK_COUNT][ino] = d;
+  dentry_index[ino % LOCK_COUNT][ino] = d;
 }
 
 types::Inode *LocalMemMeta::get_inode(types::InodeID ino) {
   rlock_dentry_idx
 
-      auto dentry = dentry_index[ino % LOCK_COUNT][ino];
+  auto dentry = dentry_index[ino % LOCK_COUNT][ino];
 
   if (dentry == NULL) {
     return NULL;
@@ -136,7 +136,7 @@ Inode *LocalMemMeta::obj2inode(types::ObjInfo &obj, bool is_dir) {
   if (is_dir)
     inode->mode = S_IFDIR | 0766;
   else
-    inode->mode = S_IFREG | 0644;
+    inode->mode = S_IFREG | 0666;
 
   if (obj.mode != NULL) {
     auto perm = 0777;

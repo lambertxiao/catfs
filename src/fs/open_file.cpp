@@ -37,13 +37,46 @@ int OpenFile::write(uint64_t off, uint64_t size, const char *buf) {
 
 void OpenFile::release() {
   if (writer != NULL) {
-    writer->release();
+    auto has_excep = false;
+    std::exception excep;
+    try {
+      writer->release();
+    } catch(const std::exception& e)
+    {
+      excep = e;
+      has_excep = true;
+    }
+    
+    std::unique_lock<std::mutex> lck(write_done_lock);
     is_writing = false;
+    write_done_cond.notify_all();
+
+    if (has_excep) {
+      throw excep;
+    }
   }
 
   if (reader != NULL) {
     reader->release();
   }
+}
+
+void OpenFile::wait_write_done() {
+  if (writer != NULL) {
+    std::unique_lock<std::mutex> lk(write_done_lock);
+
+    while (is_writing) {
+      write_done_cond.wait(lk);
+    }
+    // write_done_cond.wait(lk, []{return ready;});
+  }
+
+  	// if of.writer != nil {
+		// of.writeDoneCond.L.Lock()
+		// for of.isWriting {
+		// 	of.writeDoneCond.Wait()
+		// }
+		// of.writeDoneCond.L.Unlock()
 }
 
 }  // namespace fs

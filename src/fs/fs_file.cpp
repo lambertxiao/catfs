@@ -22,6 +22,7 @@ types::HandleID CatFS::openfile(InodeID ino, int flags) {
 
   open_file_lock.lock();
   open_files[hno] = of;
+  ino_to_openfiles[ino][hno] = of;
   open_file_lock.unlock();
 
   return hno;
@@ -35,6 +36,22 @@ int CatFS::readfile(HandleID hno, off_t off, size_t size, char *buf) {
   if (of == NULL) {
     loge("hno:{} no such open_file", hno);
     throw ENOENT;
+  }
+
+  if (opt.read_after_write_finish) {
+    logd("find read_after_write_finish");
+    open_file_lock.lock_shared();
+    auto openfiles = ino_to_openfiles[of->ino];
+    open_file_lock.unlock_shared();
+
+    for (auto &[k, v] : openfiles) {
+      if (k == hno) {
+        continue;
+      }
+
+      logi("readfile wait write done, ino:{} hno:{}", of->ino, of->hno);
+      v->wait_write_done();
+    }
   }
 
   return of->read(off, size, buf);
@@ -70,6 +87,8 @@ void CatFS::release_file(HandleID hno) {
   }
 
   of->release();
+  open_files.erase(hno);
+  ino_to_openfiles[of->ino].erase(hno);
 }
 
 }  // namespace fs

@@ -1,4 +1,5 @@
 #include "fs/fsa.h"
+#include "unistd.h"
 
 #include <fmt/core.h>
 
@@ -35,6 +36,8 @@ void FuseAdapter::statfs(fuse_req_t req, fuse_ino_t ino) {
 
 void FuseAdapter::init(void *userdata, struct fuse_conn_info *conn) {
   logi("fsa-init");
+  conn->want &= ~FUSE_CAP_SPLICE_READ;
+  conn->want &= ~FUSE_CAP_SPLICE_WRITE;
 }
 
 void FuseAdapter::destroy(void *userdata) {
@@ -216,7 +219,7 @@ void FuseAdapter::create(fuse_req_t req, fuse_ino_t parent, const char *name, mo
   }
 }
 
-void FuseAdapter::read(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi) {
+void FuseAdapter::readfile(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi) {
   logi("fsa-read ino:{} off:{} size:{}", ino, off, size);
 
   try {
@@ -249,11 +252,19 @@ void FuseAdapter::write_buf(fuse_req_t req, fuse_ino_t ino, struct fuse_bufvec *
   // logd("fsa-write_buf ino:{} off:{} size:{}", ino, off, in_buf->count);
 
   try {
+    // struct fuse_bufvec out_buf = FUSE_BUFVEC_INIT(fuse_buf_size(in_buf));
+
+  	// out_buf.buf[0].flags = fuse_buf_flags(FUSE_BUF_IS_FD | FUSE_BUF_FD_SEEK);
+    // out_buf.buf[0].fd = fi->fh;
+    // out_buf.buf[0].pos = off;
+
+  	// fuse_buf_copy(&out_buf, in_buf, FUSE_BUF_NO_SPLICE);
+
     uint64_t res = 0;
     uint64_t offset = off;
-    for (auto buf : in_buf->buf) {
+    for (auto &buf : in_buf->buf) {
       logd("fsa-write_buf hno:{} ino:{} off:{} size:{}", fi->fh, ino, offset, buf.size);
-      int n = catfs->writefile(fi->fh, offset, buf.size, (char *)buf.mem);
+      int n = catfs->writefile(fi->fh, offset, buf.size, (char*)buf.mem);
       offset += n;
       res += n;
     }

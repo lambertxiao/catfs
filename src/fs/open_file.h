@@ -18,7 +18,8 @@ class OpenFile {
  private:
   bool is_writing = false;
   std::atomic<int32_t> first_write = 0;
-  std::condition_variable writeDoneCond;  // 用来通知读端写入已经结束
+  std::mutex write_done_lock;
+  std::condition_variable write_done_cond;  // 用来通知读端写入已经结束
   std::shared_ptr<stor::Stor> stor;
 
  public:
@@ -46,6 +47,7 @@ class OpenFile {
   int read(uint64_t off, uint64_t size, char *buf);
   int write(uint64_t off, uint64_t size, const char *buf);
   void release();
+  void wait_write_done();
 };
 }  // namespace fs
 }  // namespace catfs

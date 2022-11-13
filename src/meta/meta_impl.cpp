@@ -144,6 +144,7 @@ Dentry *MetaImpl::create_dentry(InodeID pino, const std::string &name, mode_t mo
   stor->put_file(req, resp);
   auto inode = local_meta->create_new_inode(mode, parent->inode->gid, parent->inode->uid);
   dentry = local_meta->create_dentry(pino, name, inode);
+  dentry->inc_ttl(opt.dcache_timeout);
 
   return dentry;
 }

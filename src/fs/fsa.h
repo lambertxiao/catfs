@@ -42,7 +42,7 @@ class FuseAdapter {
 
   static void open(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
   static void create(fuse_req_t req, fuse_ino_t parent, const char *name, mode_t mode, struct fuse_file_info *fi);
-  static void read(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi);
+  static void readfile(fuse_req_t req, fuse_ino_t ino, size_t size, off_t off, struct fuse_file_info *fi);
   static void write(fuse_req_t req, fuse_ino_t ino, const char *buf, size_t size, off_t off, struct fuse_file_info *fi);
   static void flush(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
   static void release(fuse_req_t req, fuse_ino_t ino, struct fuse_file_info *fi);
@@ -89,7 +89,7 @@ static const struct fuse_lowlevel_ops catfs_oper = {
     .rename = FuseAdapter::rename,
     .link = FuseAdapter::link,
     .open = FuseAdapter::open,
-    .read = FuseAdapter::read,
+    .read = FuseAdapter::readfile,
     .write = FuseAdapter::write,
     .flush = FuseAdapter::flush,
     .release = FuseAdapter::release,

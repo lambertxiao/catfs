@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <fmtlog/fmtlog.h>
 
 namespace catfs {
 namespace fs {
@@ -31,6 +32,7 @@ class Part {
     if (woff == part_size) {
       return 0;
     }
+
     memcpy(buf + woff, data, size);
     woff += size;
     return size;

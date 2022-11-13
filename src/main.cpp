@@ -91,13 +91,17 @@ void init_catfs(cmdline::parser &parm) {
   auto lmeta = std::make_shared<LocalMemMeta>(meta_opt);
   std::shared_ptr<Meta> meta = std::make_shared<MetaImpl>(meta_opt, lmeta, stor);
 
-  auto cfs = new CatFS(meta, stor);
+  auto fs_opt = CatFsOpt{
+    read_after_write_finish: parm.exist("read_after_write_finish"),
+  };
+
+  auto cfs = new CatFS(fs_opt, meta, stor);
   FuseAdapter::init_catfs(cfs);
 };
 
 void set_cmdline(cmdline::parser &parm) {
-  parm.add<string>("bucket", 'b', "bucket name", true, "");
-  parm.add<string>("mount", 'm', "mount point", true, "");
+  parm.add<string>("bucket", 'b', "bucket name", true, "lambert-sh-lotus");
+  parm.add<string>("mount", 'm', "mount point", true, "mnt");
   parm.add<string>("bucket_prefix", '\0', "bucket key prefix", false, "");
   parm.add<string>("public_key", '\0', "public key", false, "");
   parm.add<string>("private_key", '\0', "private key", false, "");
@@ -114,6 +118,7 @@ void set_cmdline(cmdline::parser &parm) {
   parm.add<string>("log_dir", '\0', "set log dir", false, "");
 
   parm.add("foreground", 'f', "running in foreground");
+  parm.add("read_after_write_finish", '\0', "read op will wait for the write op finish");
   parm.add("singlethread", '\0', "singlethread");
   parm.add<u_int>("max_idle_threads", '\0', "max_idle_threads", false, 4);
 }
