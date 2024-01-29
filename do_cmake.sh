@@ -9,5 +9,4 @@ mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=DEBUG \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_PREFIX_PATH=~/workspace/awslib/ \
     "$@" ..
