@@ -6,9 +6,6 @@ include_directories(${CODE_ROOT})
 include_directories("${PROJECT_SOURCE_DIR}/deps/include")
 link_directories("${PROJECT_SOURCE_DIR}/deps/lib")
 
-include_directories("/root/workspace/awslib/include")
-link_directories("/root/workspace/awslib/lib")
-
 aux_source_directory("${CODE_ROOT}/fs" FS)
 aux_source_directory("${CODE_ROOT}/fs/freader" FS_READER)
 aux_source_directory("${CODE_ROOT}/fs/fwriter" FS_WRITER)
