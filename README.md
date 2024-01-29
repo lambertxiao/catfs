@@ -144,7 +144,7 @@ mv lib/libfuse3.a /usr/local/lib
 git clone --recurse-submodules https://github.com/aws/aws-sdk-cpp
 cd aws-sdk-cpp
 mkdir build && cd build
-cmake ../ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=/usr/local/lib/awslib -DBUILD_SHARED_LIBS=OFF
+cmake ../ -DBUILD_SHARED_LIBS=OFF -DBUILD_ONLY="s3" -DENABLE_TESTING=OFF
 make
 make -j `nproc` install
 ```
