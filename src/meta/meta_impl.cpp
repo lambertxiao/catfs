@@ -192,14 +192,18 @@ void MetaImpl::build_ftree_from_listobjects(std::string &req_prefix, stor::ListO
     auto dirname = prefix.substr(req_prefix.size(), prefix.size() - req_prefix.size() - 1);
     if (dirname == "") continue;
 
-    auto dir_node = types::FTreeNode{name : dirname, is_dir : true};
-    root.children[dirname] = dir_node;
+    auto dir_node_ptr = std::make_shared<types::FTreeNode>();
+    dir_node_ptr->name = dirname;
+    dir_node_ptr->is_dir = true;
+    root.children[dirname] = dir_node_ptr;
   }
 
   for (auto &obj : resp.objs) {
     auto filename = obj.name.substr(req_prefix.size(), obj.name.size() - req_prefix.size());
-    auto file_node = types::FTreeNode{name : filename, oinfo : obj};
-    root.children[filename] = file_node;
+    auto file_node_ptr = std::make_shared<types::FTreeNode>();
+    file_node_ptr->name = filename;
+    file_node_ptr->oinfo = obj;    
+    root.children[filename] = file_node_ptr;
   }
 };
 
