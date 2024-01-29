@@ -201,7 +201,7 @@ void LocalMemMeta::build_dentries(InodeID pino, types::FTreeNode &root) {
   build = [this, &build](Dentry *parent, std::unordered_map<string, std::shared_ptr<types::FTreeNode>> &children) {
     parent->synced = true;
     for (auto &[_, child] : children) {
-      auto child_dentry = parent->get_child(child.name);
+      auto child_dentry = parent->get_child(child->name);
 
       if (child_dentry == NULL) {
         logd("dentry add child, name:{}, is_dir:{}", child->name, child->is_dir);
