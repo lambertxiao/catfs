@@ -145,8 +145,8 @@ git clone --recurse-submodules https://github.com/aws/aws-sdk-cpp
 cd aws-sdk-cpp
 mkdir build && cd build
 cmake ../ -DBUILD_SHARED_LIBS=OFF -DBUILD_ONLY="s3" -DENABLE_TESTING=OFF
-make
-make -j `nproc` install
+make -j `nproc`
+make install
 ```
 
 整个aws-sdk-cpp编译很慢，理论上只需要编译和s3相关的模块，后续来优化这块
